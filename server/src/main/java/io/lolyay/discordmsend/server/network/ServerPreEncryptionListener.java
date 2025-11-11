@@ -72,6 +72,7 @@ public class ServerPreEncryptionListener implements ServerPreEncryptionPacketLis
             for (int i = 0; i < decrypted.length; i++) {
                 decrypted[i] ^= nonce[i]; // nonce is saved from handshake
             }
+            //Why do we need to XOR? Shouldnt AES be enough?
 
             // 3. Recreate AES shared secret
             SecretKey sharedSecret = new javax.crypto.spec.SecretKeySpec(decrypted, "AES");
