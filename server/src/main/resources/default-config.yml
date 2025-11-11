@@ -1,0 +1,58 @@
+# ========================================
+# DCT Server Configuration
+# ========================================
+
+# Enable caching of tracks
+enableTrackCache: true
+
+# Allow users to download tracks
+allowDownload: true
+
+# Single guild HQ mode - enables maximum quality settings (use for 1 server only)
+singleGuildHQ: false
+
+# Enable debug logging
+debug: false
+
+# ========================================
+# S3 Upload Configuration
+# ========================================
+
+# S3 bucket URL for uploads (e.g., https://eu2.contabostorage.com/bucket-name)
+trackUploadBucketUrl: ''
+
+# Public S3 URL for downloads (e.g., https://files.example.com/hash:bucket)
+publicDownloadBucketUrl: ''
+
+# S3 access key (leave empty to disable upload functionality)
+s3AccessKey: ''
+
+# S3 secret key
+s3SecretKey: ''
+
+# S3 region code (e.g., eu-central-1, us-east-1)
+s3Region: eu-central-1
+
+# ========================================
+# YouTube Configuration
+# ========================================
+
+# URL of the YouTube cipher server (leave empty for default: https://cipher-api.lolyay.dev/)
+cipherServerURl: ''
+
+# API key for cipher server (leave empty for default key)
+cipherServerApiKey: ''
+
+# YouTube OAuth refresh token (leave empty to disable OAuth)
+youtubeOauthRefreshToken: ''
+
+# ========================================
+# General Settings
+# ========================================
+
+# Default country code for operations
+countryCode: US
+
+
+# Server API Key, leave blank to make your server Public
+apiKey: ''

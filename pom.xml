@@ -1,0 +1,65 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>io.lolyay.dct</groupId>
+    <artifactId>DiscordToucher</artifactId>
+    <version>5.0.3</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>shared</module>
+        <module>client</module>
+        <module>server</module>
+    </modules>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <netty.version>4.1.115.Final</netty.version>
+    </properties>
+
+    <repositories>
+        <repository> <id>maven-lavalink</id> <url>https://maven.lavalink.dev/releases</url> </repository> <repository> <id>jitpack.io</id> <url>https://jitpack.io</url> </repository>
+        <repository>
+            <id>lolyay</id>
+            <url>https://maven.lolyay.dev/releases</url>
+        </repository>
+    </repositories>
+    <distributionManagement>
+        <repository>
+            <id>lolyay</id>
+            <url>https://maven.lolyay.dev/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>lolyay</id>
+            <url>https://maven.lolyay.dev/snapshots</url>
+            <name>lolyay</name>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-bom</artifactId>
+                <version>${netty.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+
+    </dependencies>
+</project>
