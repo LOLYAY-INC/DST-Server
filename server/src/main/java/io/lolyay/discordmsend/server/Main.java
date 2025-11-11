@@ -24,7 +24,7 @@ public class Main {
         // Initialize server with config values
         serverInitData = new ServerInitData()
                 .setServerName("Default DST Server")
-                .setServerVersion("Beta 5.0.0-P" + Enviroment.PROTOCOL_VERSION)
+                .setServerVersion("Alpha-5.0.0-P" + Enviroment.PROTOCOL_VERSION)
                 .setCountryCode(ConfigFile.countryCode)
                 .setFeatures(new ServerFeatures(
                         ServerFeatures.Feature.CAN_DO_YOUTUBE,
@@ -48,7 +48,7 @@ public class Main {
             }
         }));
         server = new Server(2677, Enviroment.PROTOCOL_VERSION, packetRegistry, serverInitData, ConfigFile.apiKey);
-        Logger.log("Starting Server...");
+        Logger.log("Starting Server with protocol version " + Enviroment.PROTOCOL_VERSION + " on port " + 2677);
         server.start();
 
     }
