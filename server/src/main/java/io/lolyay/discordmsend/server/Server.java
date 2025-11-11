@@ -238,10 +238,6 @@ public class Server {
             cacheManager.expireOldTracks();
         }, 6, TimeUnit.HOURS);
 
-        // Cookie updater - fetch fresh cookies every 25 minutes
-        //scheduleRepeating(this::updateCookies, 25, TimeUnit.MINUTES);
-        // Run once immediately on startup
-      //  schedule(this::updateCookies, 5, TimeUnit.SECONDS);
 
     }
 
@@ -427,18 +423,6 @@ public class Server {
         scheduledExecutorService.scheduleAtFixedRate(runnable, time, time,timeUnit);
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
     public int getEncryptionTimeout(){
         return 20;
     }
@@ -538,39 +522,4 @@ public class Server {
      * Updates the cookies.txt file by fetching from the local cookie API.
      * Runs every 25 minutes to keep cookies fresh.
      */
-    private void updateCookies() {
-        try {
-            Logger.debug("Fetching fresh cookies from API...");
-            
-            HttpClient client = HttpClient.newBuilder()
-                    .connectTimeout(Duration.ofSeconds(30))
-                    .build();
-            
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://mc.subvive.eu:3744/getcookies"))
-                    .timeout(Duration.ofSeconds(30))
-                    .GET()
-                    .build();
-            
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            
-            if (response.statusCode() == 200) {
-                String cookieData = response.body();
-                Path cookiePath = Path.of("/home/container/cookies.txt");
-                
-                // Write to temporary file first
-                Path tempPath = Path.of("/home/container/cookies.txt.tmp");
-                Files.writeString(tempPath, cookieData);
-                
-                // Atomic rename to prevent corruption if read during write
-                Files.move(tempPath, cookiePath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-                
-                Logger.info("Successfully updated cookies.txt (" + cookieData.length() + " bytes)");
-            } else {
-                Logger.err("Failed to fetch cookies: HTTP " + response.statusCode());
-            }
-        } catch (Exception e) {
-            Logger.err("Error updating cookies: " + e.getMessage());
-        }
-    }
 }
