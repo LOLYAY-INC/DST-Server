@@ -168,10 +168,10 @@ s3Region: eu-central-1
 # YouTube Configuration
 # ========================================
 
-# URL of the YouTube cipher server
+# URL of the YouTube cipher server (https://github.com/kikkia/yt-cipher/)
 cipherServerURl: ''
 
-# API key for cipher server
+# API key for cipher server  (https://github.com/kikkia/yt-cipher/)
 cipherServerApiKey: ''
 
 # YouTube OAuth refresh token
@@ -210,8 +210,8 @@ Leave empty to disable upload functionality.
 
 #### YouTube Configuration
 
-- **cipherServerURl**: Custom cipher server (leave empty for default)
-- **cipherServerApiKey**: Cipher server API key (leave empty for default)
+- **cipherServerURl**: Custom cipher server 
+- **cipherServerApiKey**: Cipher server API key
 - **youtubeOauthRefreshToken**: OAuth token for bypassing YouTube restrictions
 
 #### API Key
