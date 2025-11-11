@@ -16,7 +16,8 @@ import java.util.concurrent.*;
 
 /**
  * High-quality Opus audio streamer using yt-dlp + ffmpeg
- * Implements MediaFrameProvider for KOE compatibility
+ * The name is an ancient relic, when this project was starting this was a tiny (under 100 lines of code) file that streamed opus files to discord.
+ * Now it is over 750 lines of code long and massive.
  */
 public class HighQualityOpusStreamer {
     private final BlockingQueue<short[]> pcmBuffer = new LinkedBlockingQueue<>(15_000); // ~5 minutes of PCM audio buffer
@@ -235,6 +236,7 @@ public class HighQualityOpusStreamer {
                     int hi = byteBuffer[i * 2 + 1];
                     samples[i] = (short) ((hi << 8) | lo);
                 }
+                // this will probably fail if we ever sumbled upon a mono track on youtube or through any yt-dlp source (wihich is more likeley)
                 
                 // Store raw PCM samples (with timeout to prevent blocking)
                 if (!pcmBuffer.offer(samples, BUFFER_PUT_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
@@ -341,12 +343,10 @@ public class HighQualityOpusStreamer {
                 "\nPlease run: chmod +x \"" + ytDlpExecutable.getAbsolutePath() + "\"");
         }
         
-        // 1️⃣ yt-dlp process (with cipher API configuration)
         ProcessBuilder ytDlpPb = new ProcessBuilder(
-                ytDlpExecutable.getAbsolutePath(),
+                ytDlpExecutable.getAbsolutePath(), // custom version is required else it wont work (https://github.com/yt-dlp/yt-dlp/issues/14404)
                 "--extractor-args", "youtubejsc-api:api_url=%s;api_token=%s".formatted(ConfigFile.cipherServerURl, ConfigFile.cipherServerApiKey),
                 "-f", "bestaudio",
-                "-v", //DEBUG
                 "-o", "-",  // pipe to stdout
                 "--no-playlist",
                 "--cookies", "cookies.txt",
@@ -360,7 +360,6 @@ public class HighQualityOpusStreamer {
         Logger.info("Starting yt-dlp with command: " + String.join(" ", ytDlpPb.command()));
         ytDlpProcess = ytDlpPb.start();
 
-        // 2️⃣ FFmpeg process
         ProcessBuilder ffmpegPb = new ProcessBuilder(
                 ffmpegExecutable.getAbsolutePath(),
                 "-loglevel", "error",
@@ -374,7 +373,6 @@ public class HighQualityOpusStreamer {
         ffmpegPb.redirectError(ProcessBuilder.Redirect.INHERIT);
         ffmpegProcess = ffmpegPb.start();
 
-        // 3️⃣ Pipe yt-dlp -> FFmpeg
         pipeThread = new Thread(() -> {
             try (InputStream ytOut = ytDlpProcess.getInputStream();
                  OutputStream ffIn = ffmpegProcess.getOutputStream()) {
@@ -387,13 +385,12 @@ public class HighQualityOpusStreamer {
         }, "YT-DLP-Pipe");
         pipeThread.start();
 
-        // 4️⃣ Decode PCM frames from FFmpeg
         decodeThread = new Thread(this::decodePcm, "PCM-Decoder");
         decodeThread.start();
         
-        // 5️⃣ Encode PCM to Opus in background
         encoderThread = new Thread(this::encodeToOpus, "Opus-Encoder");
         encoderThread.start();
+        // why the fuck do we need 4 threads to do this? doesnt yt-dlp support outputting opus directly?
 
         // Set priorities: Encoder > Decoder > Pipe (encoder is most time-critical)
         // Use more balanced priorities to avoid starving other threads
@@ -692,6 +689,7 @@ public class HighQualityOpusStreamer {
                         "Opus Buffer: " + opusBuffer.size() + " frames (" + (opusBuffer.size() * 20 / 1000.0) + "s), " +
                         "buffering: " + buffering + ", volume: " + volume);
         }
+        //TODO: Re-buffer the whole opus buffer (-80ms) to change volume instantly.
         
         return frame;
     }
