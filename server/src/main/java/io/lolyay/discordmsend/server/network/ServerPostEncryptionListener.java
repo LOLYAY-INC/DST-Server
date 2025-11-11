@@ -153,7 +153,7 @@ public class ServerPostEncryptionListener implements ServerPostEncryptionPacketL
     public void onChangeSource(SetSourceC2SPacket packet) {
         Logger.warn("SetSourceC2SPacket is DEPRECATED and will be removed in a future version. " +
                 "Only HighQualityOpusStreamer is supported now. Guild: " + packet.guildId());
-        
+        //This warning will stay until the plugin api is released
         // Log at info level for debugging
         Logger.info("Received SetSourceC2SPacket (deprecated) - Guild: " + 
                    packet.guildId() + 
