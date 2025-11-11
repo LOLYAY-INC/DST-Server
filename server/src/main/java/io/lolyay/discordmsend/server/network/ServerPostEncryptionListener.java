@@ -271,7 +271,7 @@ public class ServerPostEncryptionListener implements ServerPostEncryptionPacketL
                 return;
             }
             
-            // Get the PCM file path (assuming FileSystemAudioCacheManager structure)
+            // Get the PCM file path 
             String pcmFilePath = "./cache/tracks/" + cacheId + ".pcm";
             
             Logger.debug("Processing link request for cache ID: " + cacheId + " (sequence: " + sequence + ")");
@@ -310,6 +310,7 @@ public class ServerPostEncryptionListener implements ServerPostEncryptionPacketL
             Logger.debug("Force reconnected Discord player for guild " + packet.guildId());
         } else {
             Logger.warn("Force reconnect requested for non-Discord player (guild " + packet.guildId() + "). Ignoring.");
+            //This is possible to implement ( restart generator and sender thread and clear pregen buffer but why? It shouldnt break unlike discord)
         }
     }
 }
