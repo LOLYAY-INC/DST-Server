@@ -33,7 +33,7 @@ public class PacketTrackConsumer implements ITrackConsumer {
         this.guildId = parent.getGuildId();
         this.audioProvider = streamer;
         
-        // Check if client has UDP_ME_PLZ feature
+        // Who even thought of "UDP_ME_PLZ"
         this.udpMode = parent.getParent().getOwner().getUserData() != null &&
                        parent.getParent().getOwner().getUserData().features().contains(
                            ClientFeatures.Feature.UDP_ME_PLZ);
