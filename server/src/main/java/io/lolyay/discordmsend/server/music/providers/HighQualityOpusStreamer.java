@@ -4,6 +4,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import io.github.jaredmdobson.concentus.OpusApplication;
 import io.github.jaredmdobson.concentus.OpusEncoder;
 import io.github.jaredmdobson.concentus.OpusSignal;
+import io.lolyay.discordmsend.network.types.ClientFeatures;
 import io.lolyay.discordmsend.obj.EndReason;
 import io.lolyay.discordmsend.obj.Severity;
 import io.lolyay.discordmsend.server.cache.AudioCacheManager;
@@ -645,7 +646,9 @@ public class HighQualityOpusStreamer {
         
         // Debug: Log if we have data but can't provide for some reason
         if (opusBuffer.isEmpty() && !pcmBuffer.isEmpty() && !streamEnded) {
-            Logger.debug("canProvide: Opus buffer empty but PCM buffer has " + pcmBuffer.size() + " frames. Encoder may be stalled.");
+            // If its NOT a discord bot its okay as that is normal behavior when pulling frames at (up to) 100x speed
+            if(!player.getParent().getOwner().getUserData().features().isEnabled(ClientFeatures.Feature.IS_DISCORD_BOT))
+                Logger.debug("canProvide: Opus buffer empty but PCM buffer has " + pcmBuffer.size() + " frames. Encoder may be stalled.");
         }
         
         int bufferSize = pcmBuffer.size();
