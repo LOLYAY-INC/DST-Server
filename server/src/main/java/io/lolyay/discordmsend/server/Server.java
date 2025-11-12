@@ -518,8 +518,4 @@ public class Server {
         cacheManager.markAccessed(trackId);
     }
 
-    /**
-     * Updates the cookies.txt file by fetching from the local cookie API.
-     * Runs every 25 minutes to keep cookies fresh.
-     */
 }

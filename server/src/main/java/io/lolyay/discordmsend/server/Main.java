@@ -24,7 +24,7 @@ public class Main {
         // Initialize server with config values
         serverInitData = new ServerInitData()
                 .setServerName("Default DST Server")
-                .setServerVersion("Alpha-5.0.0-P" + Enviroment.PROTOCOL_VERSION)
+                .setServerVersion("Alpha-5.0.5-P" + Enviroment.PROTOCOL_VERSION)
                 .setCountryCode(ConfigFile.countryCode)
                 .setFeatures(new ServerFeatures(
                         ServerFeatures.Feature.CAN_DO_YOUTUBE,
