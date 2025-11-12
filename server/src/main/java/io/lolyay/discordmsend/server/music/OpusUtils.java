@@ -14,7 +14,6 @@ public class OpusUtils {
      * Number of channels (stereo)
      */
     public static final int CHANNELS = 2;
-    //67
     /**
      * Frame duration in milliseconds
      */
