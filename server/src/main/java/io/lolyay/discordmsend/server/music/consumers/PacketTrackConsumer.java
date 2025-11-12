@@ -24,6 +24,8 @@ public class PacketTrackConsumer implements ITrackConsumer {
     private final Thread generatorThread;
     private final HighQualityOpusStreamer audioProvider;
     private final boolean udpMode;
+
+    private boolean areThreadsStopped = true;
     
     private volatile boolean running = false;
     private volatile boolean generating = false;
@@ -138,6 +140,15 @@ public class PacketTrackConsumer implements ITrackConsumer {
     public HighQualityOpusStreamer getStreamer() {
         return audioProvider;
     }
+
+    @Override
+    public void undestroy() {
+        if(areThreadsStopped) {
+            Logger.debug("Threads re-loading for PacketTrackConsumer on guild " + guildId);
+            start();
+        }
+    }
+
     public void stop() {
         Logger.info("Stopping SpecialThreadPlayer for guild " + guildId);
         audioProvider.stop();
@@ -162,6 +173,8 @@ public class PacketTrackConsumer implements ITrackConsumer {
                 Thread.currentThread().interrupt();
             }
         }
+        areThreadsStopped = true;
+
     }
 
     @Override
@@ -171,5 +184,6 @@ public class PacketTrackConsumer implements ITrackConsumer {
         generating = true;
         senderThread.start();
         generatorThread.start();
+        areThreadsStopped = false;
     }
 }

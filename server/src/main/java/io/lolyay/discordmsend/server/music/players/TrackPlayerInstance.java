@@ -86,6 +86,7 @@ public class TrackPlayerInstance {
             consumer.start();
             wasStarted = true;
         }
+        consumer.undestroy();
         consumer.getStreamer().playTrack(track);
     }
 
