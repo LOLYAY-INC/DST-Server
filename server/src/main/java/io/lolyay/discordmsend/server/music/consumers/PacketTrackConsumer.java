@@ -20,8 +20,8 @@ public class PacketTrackConsumer implements ITrackConsumer {
     private final TrackPlayerInstance parent;
     private final long guildId;
     private final BlockingQueue<byte[]> audioQueue;
-    private final Thread senderThread;
-    private final Thread generatorThread;
+    private  Thread senderThread;
+    private  Thread generatorThread;
     private final HighQualityOpusStreamer audioProvider;
     private final boolean udpMode;
 
@@ -145,6 +145,13 @@ public class PacketTrackConsumer implements ITrackConsumer {
     public void undestroy() {
         if(areThreadsStopped) {
             Logger.debug("Threads re-loading for PacketTrackConsumer on guild " + guildId);
+            // Create new thread instances since old ones cannot be restarted
+            this.senderThread = new Thread(this::senderLoop, "SpecialPlayer-Sender-" + guildId);
+            this.senderThread.setDaemon(true);
+            
+            this.generatorThread = new Thread(this::generatorLoop, "SpecialPlayer-Generator-" + guildId);
+            this.generatorThread.setDaemon(true);
+            
             start();
         }
     }
