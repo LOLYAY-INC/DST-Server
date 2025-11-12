@@ -1,4 +1,4 @@
-# 🎵 Discord Stream Toucher (DST)
+# 🎵 Discord Stream Transformer (DST)
 
 [![Version](https://img.shields.io/badge/version-5.0.3-blue.svg)](https://github.com/yourusername/DiscordToucher)
 [![Protocol](https://img.shields.io/badge/protocol-31-green.svg)](https://github.com/yourusername/DiscordToucher)
