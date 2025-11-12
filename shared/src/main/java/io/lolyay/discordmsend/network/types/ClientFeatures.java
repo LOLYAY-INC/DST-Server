@@ -170,8 +170,7 @@ public class ClientFeatures {
     public String toString() {
         StringBuilder sb = new StringBuilder("ClientFeatures{");
         for (int i = 0; i < MAX_FEATURES; i++) {
-            if (i > 0) sb.append(", ");
-            sb.append(i).append("=").append(features.get(i));
+            sb.append(features.get(i) ? Feature.values()[i] : "").append(", ");
         }
         return sb.append('}').toString();
     }
