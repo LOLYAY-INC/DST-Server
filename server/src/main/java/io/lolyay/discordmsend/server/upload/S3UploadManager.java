@@ -15,7 +15,7 @@ import java.io.File;
 import java.net.URI;
 
 /**
- * Handles uploading files to Contabo S3 bucket.
+ * Handles uploading files to a S3 bucket.
  */
 public class S3UploadManager {
     
@@ -90,7 +90,7 @@ public class S3UploadManager {
     }
     
     /**
-     * Extracts bucket name from URL like "https://eu2.contabostorage.com/subvive"
+     * Extracts bucket name
      */
     private String extractBucketName(String bucketUrl) {
         String[] parts = bucketUrl.split("/");
@@ -106,7 +106,7 @@ public class S3UploadManager {
     }
     
     /**
-     * Closes the S3 client.
+     * Closes the S3 client. (isn't this obvious)
      */
     public void close() {
         s3Client.close();
