@@ -5,10 +5,12 @@ import io.lolyay.discordmsend.network.types.ClientFeatures;
 import io.lolyay.discordmsend.server.music.players.TrackPlayerInstance;
 import io.lolyay.discordmsend.server.music.providers.HighQualityOpusStreamer;
 import io.lolyay.discordmsend.util.logging.Logger;
+import org.checkerframework.checker.units.qual.A;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Sends AudioS2CPackets directly to non-Discord bot clients.
@@ -24,6 +26,7 @@ public class PacketTrackConsumer implements ITrackConsumer {
     private  Thread generatorThread;
     private final HighQualityOpusStreamer audioProvider;
     private final boolean udpMode;
+    private final AtomicLong sequence = new AtomicLong(0);
 
     private boolean areThreadsStopped = true;
     
@@ -65,7 +68,7 @@ public class PacketTrackConsumer implements ITrackConsumer {
                 }
                 
                 // Send AudioS2CPacket
-                AudioS2CPacket packet = new AudioS2CPacket(guildId, opusData);
+                AudioS2CPacket packet = new AudioS2CPacket(guildId, opusData, sequence.getAndIncrement());
                 parent.getParent().getOwner().sendPacket(packet);
                 
 
@@ -154,6 +157,7 @@ public class PacketTrackConsumer implements ITrackConsumer {
             
             start();
         }
+        sequence.set(0);
     }
 
     public void stop() {
@@ -192,5 +196,6 @@ public class PacketTrackConsumer implements ITrackConsumer {
         senderThread.start();
         generatorThread.start();
         areThreadsStopped = false;
+        sequence.set(0);
     }
 }

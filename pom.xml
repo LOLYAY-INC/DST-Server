@@ -7,7 +7,7 @@
 
     <groupId>io.lolyay.dct</groupId>
     <artifactId>DiscordToucher</artifactId>
-    <version>5.0.3</version>
+    <version>5.0.6</version>
     <packaging>pom</packaging>
 
     <modules>
