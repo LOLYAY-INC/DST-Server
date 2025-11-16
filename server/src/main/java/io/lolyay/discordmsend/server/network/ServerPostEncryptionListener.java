@@ -26,7 +26,7 @@ public class ServerPostEncryptionListener implements ServerPostEncryptionPacketL
         connection.send(new EncHelloS2CPacket(
                 server.serverName(),
                 server.serverVersion(),
-                server.port(),
+                server.protocolVersion(),
                 server.features(),
                 server.ytSourceVersion(),
                 server.moddedInfo(),
