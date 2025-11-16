@@ -53,7 +53,7 @@ A high-performance music streaming server for Discord with end-to-end encryption
 - **yt-dlp** (Modified version) - Required for YouTube playback
 - A Discord bot token (if using Discord mode)
 - (Optional) S3-compatible storage for track sharing
-- (Optional) YouTube OAuth refresh token for unrestricted access
+- YouTube OAuth refresh token for unrestricted access
 
 ### Installing FFmpeg
 
@@ -566,11 +566,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - [ ] Web-based admin panel
 - [ ] Plugin system for custom sources
-- [ ] Redis support for distributed caching
 - [ ] WebSocket API for browser clients
-- [ ] Prometheus metrics endpoint
-- [ ] Docker Compose setup with Redis
-
+- [ ] Auto download ffmpeg and yt-dlp
+- [ ] BYOK yt-dlp and Youtube Oath2 Support
 ---
 
 Made with ❤️ by the DST Team

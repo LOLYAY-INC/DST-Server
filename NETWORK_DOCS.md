@@ -17,7 +17,7 @@ Complete documentation for developers building custom clients for the Discord St
 
 ### Protocol Information
 
-- **Protocol Version**: `31`
+- **Protocol Version**: `32`
 - **Default Port**: `2677`
 - **Transport**: TCP (Ultra-low latency design)
 - **Encoding**: Custom binary protocol with Netty + VarInt compression
