@@ -564,11 +564,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🗺️ Roadmap
 
+- [ ] Auto download ffmpeg and yt-dlp
+- [ ] BYOK yt-dlp and Youtube Oath2 Support
+- [ ] Library Loader to shrink filesize
 - [ ] Web-based admin panel
 - [ ] Plugin system for custom sources
 - [ ] WebSocket API for browser clients
-- [ ] Auto download ffmpeg and yt-dlp
-- [ ] BYOK yt-dlp and Youtube Oath2 Support
 ---
 
 Made with ❤️ by the DST Team
