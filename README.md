@@ -1,5 +1,7 @@
 # 🎵 Discord Stream Transformer (DST)
 
+# Warning!
+## This project is not optimized / enhanced for public / general use. Also for now there wont be any support provided. This will probably change in the future, for now this is a WIP project with to release date.
 [![Version](https://img.shields.io/badge/version-5.0.3-blue.svg)](https://github.com/yourusername/DiscordToucher)
 [![Protocol](https://img.shields.io/badge/protocol-31-green.svg)](https://github.com/yourusername/DiscordToucher)
 [![Java](https://img.shields.io/badge/Java-17+-orange.svg)](https://www.oracle.com/java/)
