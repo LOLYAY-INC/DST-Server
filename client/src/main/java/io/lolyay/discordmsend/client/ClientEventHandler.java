@@ -2,7 +2,7 @@ package io.lolyay.discordmsend.client;
 
 import io.lolyay.discordmsend.network.protocol.packet.packets.S2C.postenc.AudioS2CPacket;
 import io.lolyay.discordmsend.network.protocol.packet.packets.S2C.postenc.TrackTimingUpdateS2CPacket;
-import io.lolyay.discordmsend.network.protocol.packet.packets.S2C.postenc.ev.*;
+import io.lolyay.discordmsend.network.protocol.packet.packets.S2C.postenc.events.*;
 
 public interface ClientEventHandler {
     public void onPlayerPause(PlayerPauseS2CPacket packet);
@@ -25,7 +25,7 @@ public interface ClientEventHandler {
      * Called when an audio packet is received from the server.
      * This is sent by special guild IDs (0-200) that use direct packet transmission.
      * 
-     * @param packet The audio packet containing guild ID and Opus-encoded audio data (20ms frame)
+     * @param packet The audio packet containing guild ID and Opus-encoded audio positionMs (20ms frame)
      */
     public void onAudio(AudioS2CPacket packet);
 

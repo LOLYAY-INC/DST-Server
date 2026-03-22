@@ -6,7 +6,7 @@ import io.lolyay.discordmsend.network.protocol.packet.Packet;
 import io.lolyay.discordmsend.network.protocol.packet.PacketCodec;
 
 
-public record HandShakeC2SPacket(int protocolVersion, String serverAddress, String apiKey, int serverPort ) implements Packet<ServerPreEncryptionPacketListener> {
+public record HandShakeC2SPacket(int protocolVersion, String serverAddress, String apiKey, int serverPort) implements Packet<ServerPreEncryptionPacketListener> {
 
     public static final PacketCodec<HandShakeC2SPacket> CODEC = PacketCodec.create(
             (buf, packet) -> {

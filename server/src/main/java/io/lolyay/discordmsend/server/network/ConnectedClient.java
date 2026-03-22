@@ -7,48 +7,46 @@ import io.lolyay.discordmsend.network.protocol.packet.Packet;
 import io.lolyay.discordmsend.network.protocol.packet.packets.S2C.postenc.PlayerUpdateS2CPacket;
 import io.lolyay.discordmsend.network.protocol.packet.packets.S2C.postenc.StatisticsS2CPacket;
 import io.lolyay.discordmsend.obj.CUserData;
-import io.lolyay.discordmsend.server.Server;
-import io.lolyay.discordmsend.server.music.players.TrackPlayerClient;
-import io.lolyay.discordmsend.server.music.players.TrackPlayerInstance;
-import io.lolyay.discordmsend.util.logging.Logger;
+import io.lolyay.discordmsend.server.DstServer;
+import io.lolyay.discordmsend.server.music.players.ConnectedPlayer;
+import io.lolyay.discordmsend.server.music.players.GuildPlayerInstance;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.management.ManagementFactory;
-
+@Getter
+@Setter
+@Slf4j
 public class ConnectedClient {
     private final int protocolVersion;
     private final Connection connection;
-    private final Server server;
+    private final DstServer dstServer;
 
-    private TrackPlayerClient player;
-
-    private long userId;
+    private ConnectedPlayer player;
 
     private CUserData userData;
 
-    public ConnectedClient(int protocolVersion, Connection connection, Server server) {
+    public ConnectedClient(int protocolVersion, Connection connection, DstServer dstServer) {
         this.protocolVersion = protocolVersion;
         this.connection = connection;
-        this.server = server;
-    }
-
-    public Connection getConnection() {
-        return connection;
+        this.dstServer = dstServer;
     }
 
     public void updateClient(){
         if(!this.connection.isActive()){
             cleanup();
-            server.removeClient(this);
+            dstServer.removeClient(this);
         }
         if(this.connection.getPhase() == NetworkPhase.POST_ENCRYPTION)
-            for(TrackPlayerInstance p : player.getPlayers().values()){
+            for(GuildPlayerInstance p : player.getPlayers().values()){
                 connection.send(new PlayerUpdateS2CPacket(
                         p.getGuildId(),
                         p.isPaused(),
                         p.getVolume(),
-                        p.getConsumer().getStreamer().getPlayingTrack() == null ? 0 : p.getConsumer().getStreamer().getPlayingTrack().getPosition(),
-                        p.getConsumer().getStreamer().getPlayingTrack() != null,
-                        server.unResolve(p.getConsumer().getStreamer().getPlayingTrack()).getTrackId()
+                        p.getConsumer().getPlayingTrack() == null ? 0 : p.getPosition(),
+                        p.getConsumer().getPlayingTrack() != null,
+                        dstServer.unResolve(p.getConsumer().getPlayingTrack()).getTrackId()
                 ));
             }
     }
@@ -56,7 +54,7 @@ public class ConnectedClient {
     public void updateClientUsage(){
         if(!this.connection.isActive()) {
             cleanup();
-            server.removeClient(this);
+            dstServer.removeClient(this);
         }
         if(this.connection.getPhase() == NetworkPhase.POST_ENCRYPTION) {
             Runtime runtime = Runtime.getRuntime();
@@ -66,57 +64,42 @@ public class ConnectedClient {
             double processCpuLoad = osBean.getCpuLoad();
             int percent = (int) (processCpuLoad * 100);
             int players = player.getPlayers().size();
-            int clients = server.getConnectedClients().size();
+            int clients = dstServer.getConnectedClients().size();
             connection.send(new StatisticsS2CPacket(maxMemory, freeMemory, percent, players, clients));
         }
     }
 
-    public void setUserData(CUserData userData) {
-        this.userData = userData;
-    }
-
     public void setUserId(long userId){
-        this.userId = userId;
-        this.player = new TrackPlayerClient(String.valueOf(userId), server.getClient(), server, this);
-        Logger.debug("Client " + userId + " Created SenderObject");
+        this.player = new ConnectedPlayer(String.valueOf(userId), dstServer.getClient(), dstServer, this);
+        log.debug("Client " + userId + " Created SenderObject");
     }
 
     public void sendPacket(Packet<?> packet){
         if(!connection.isActive()) {
             cleanup();
-            server.removeClient(this);
+            dstServer.removeClient(this);
         }
         connection.send(packet);
     }
 
-    public TrackPlayerClient getPlayer() {
-        return player;
-    }
-
-    public int protocolVersion() {
-        return protocolVersion;
-    }
-    
-    public CUserData getUserData() {
-        return userData;
-    }
     
     /**
      * Cleanup all resources when client disconnects
      */
     public void cleanup() {
         if (player != null) {
-            Logger.info("Cleaning up resources for disconnected client " + userId);
-            // Stop and destroy all players
-            for (TrackPlayerInstance p : player.getPlayers().values()) {
+            log.info("Cleaning up resources for disconnected client " + player.getUserId());
+            // Stop all players first
+            for (GuildPlayerInstance p : player.getPlayers().values()) {
                 try {
                     p.stop();
-                    Logger.debug("Stopped player for guild " + p.getGuildId());
+                    log.debug("Stopped player for guild " + p.getGuildId());
                 } catch (Exception e) {
-                    Logger.err("Error stopping player during cleanup: " + e.getMessage());
+                    log.error("Error stopping player during cleanup: " + e.getMessage());
                 }
             }
-            player.getPlayers().clear();
+            // Unregister from pool and release koe resources
+            player.destroy();
         }
     }
 }

@@ -3,7 +3,8 @@ package io.lolyay.discordmsend.util.nbt;
 import dev.dewy.nbt.api.Tag;
 import dev.dewy.nbt.tags.collection.CompoundTag;
 import dev.dewy.nbt.tags.primitive.*;
-import io.lolyay.discordmsend.util.logging.Logger;
+
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
 
 
@@ -13,6 +14,7 @@ import java.util.Map;
  * An enhanced version of CompoundTag that provides better type conversion and SNBT support.
  * This class extends CompoundTag and adds methods for safer type conversion with proper error handling.
  */
+@Slf4j
 public class BetterCompoundTag extends CompoundTag {
     
     /**
@@ -55,7 +57,6 @@ public class BetterCompoundTag extends CompoundTag {
         super(name);
     }
 
-    // ========== Enhanced Type Conversion Methods ==========
 
     /**
      * Gets a boolean value from the tag with the specified key.
@@ -85,7 +86,7 @@ public class BetterCompoundTag extends CompoundTag {
             return str.equals("true") || str.equals("1");
         }
 
-        Logger.warn("Key " + key + " can't be converted to BOOLEAN");
+        log.warn("Key " + key + " can't be converted to BOOLEAN");
         return false;
     }
 
@@ -154,7 +155,7 @@ public class BetterCompoundTag extends CompoundTag {
         } else if (get(key) instanceof StringTag) {
             return Byte.parseByte(((StringTag) get(key)).getValue());
         }
-        Logger.warn("Key " + key + " can't be converted to BYTE");
+        log.warn("Key " + key + " can't be converted to BYTE");
         return 0;
 
     }
@@ -220,7 +221,7 @@ public int IgetInt(String key, Integer defaultValue) {
             // Fall through to warning below
         }
 
-        Logger.warn("Key " + key + " can't be converted to INT");
+        log.warn("Key " + key + " can't be converted to INT");
         return defaultValue;
     }
 
@@ -268,7 +269,7 @@ public int IgetInt(String key, Integer defaultValue) {
             // Fall through to warning below
         }
 
-        Logger.warn("Key " + key + " can't be converted to LONG");
+        log.warn("Key " + key + " can't be converted to LONG");
         return defaultValue;
     }
 
@@ -316,7 +317,7 @@ public int IgetInt(String key, Integer defaultValue) {
             // Fall through to warning below
         }
 
-        Logger.warn("Key " + key + " can't be converted to FLOAT");
+        log.warn("Key " + key + " can't be converted to FLOAT");
         return defaultValue;
     }
 
@@ -364,7 +365,7 @@ public int IgetInt(String key, Integer defaultValue) {
             // Fall through to warning below
         }
 
-        Logger.warn("Key " + key + " can't be converted to SHORT");
+        log.warn("Key " + key + " can't be converted to SHORT");
         return defaultValue;
     }
 
@@ -412,7 +413,7 @@ public int IgetInt(String key, Integer defaultValue) {
             // Fall through to warning below
         }
 
-        Logger.warn("Key " + key + " can't be converted to DOUBLE");
+        log.warn("Key " + key + " can't be converted to DOUBLE");
         return defaultValue;
     }
 
@@ -478,7 +479,6 @@ public String ItoSnbt() {
             String key = entry.getKey();
             Tag tag = entry.getValue();
             
-            // Escape and quote the key if needed
             if (!key.matches("^[a-zA-Z0-9._+-]+$")) {
                 key = "\"" + IescapeString(key) + "\"";
             }
@@ -539,7 +539,7 @@ private String IescapeString(String str) {
      * Creates a new BetterCompoundTag from an existing CompoundTag.
      *
      * @param tag the tag to copy
-     * @return a new BetterCompoundTag with the same data as the input tag
+     * @return a new BetterCompoundTag with the same positionMs as the input tag
      */
     public static BetterCompoundTag from(CompoundTag tag) {
         BetterCompoundTag result = new BetterCompoundTag(tag.getName());
@@ -551,7 +551,7 @@ private String IescapeString(String str) {
      * Creates a new BetterCompoundTag from an existing Map.
      *
      * @param map the map to create the tag from
-     * @return a new BetterCompoundTag containing the map data
+     * @return a new BetterCompoundTag containing the map positionMs
      */
     public static BetterCompoundTag fromMap(Map<String, Tag> map) {
         BetterCompoundTag result = new BetterCompoundTag();
@@ -561,22 +561,5 @@ private String IescapeString(String str) {
         return result;
     }
     
-    /**
-     * Creates a new BetterCompoundTag from SNBT (String NBT) format.
-     *
-     * @param snbt the SNBT string to parse
-     * @return a new BetterCompoundTag containing the parsed data
-     * @throws IllegalArgumentException if the SNBT is invalid
-     */
-    public static BetterCompoundTag fromSnbt(String snbt) {
-        // This is a simplified implementation that only handles basic SNBT
-        // For a complete implementation, consider using a proper SNBT parser
-        try {
-            // This is a placeholder - in a real implementation, you would parse the SNBT string
-            // and create the appropriate tag objects
-            return new BetterCompoundTag();
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid SNBT: " + e.getMessage(), e);
-        }
-    }
+
 }

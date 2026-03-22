@@ -12,12 +12,9 @@ import java.util.UUID;
 
 public class UUIDUtil {
     public static UUID parseUuid(Tag tag) {
-        // Case 1: The UUID is a standard String.
         if (tag instanceof StringTag) {
             return UUID.fromString(((StringTag) tag).getValue());
         }
-
-        // Case 2: The UUID is an Int Array [I; 1, 2, 3, 4].
         if (tag instanceof IntArrayTag) {
             int[] intArray = ((IntArrayTag) tag).getValue();
             if (intArray.length != 4) {
@@ -25,11 +22,8 @@ public class UUIDUtil {
             }
             return uuidFromIntArray(intArray);
         }
-
-        // Case 3: The UUID is a List of Ints [1, 2, 3, 4].
         if (tag instanceof ListTag) {
             ListTag<IntTag> listTag = (ListTag<IntTag>) tag;
-            // Ensure it's a list of IntTags and has the correct size.
             int[] intArray = new int[4];
             for (int i = 0; i < 4; i++) {
                 intArray[i] = listTag.get(i).getValue();
@@ -37,8 +31,6 @@ public class UUIDUtil {
             return uuidFromIntArray(intArray);
 
         }
-
-        // If the tag is none of the above types, it's an error.
         throw new IllegalArgumentException("Tag must be a StringTag, IntArrayTag, or ListTag of Ints to be parsed as a UUID, but was " + tag.getClass().getSimpleName());
     }
 

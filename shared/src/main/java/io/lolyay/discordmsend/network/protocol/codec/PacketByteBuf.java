@@ -8,7 +8,6 @@ import dev.dewy.nbt.api.registry.TagTypeRegistry;
 import dev.dewy.nbt.io.NbtReader;
 import dev.dewy.nbt.tags.collection.CompoundTag;
 import dev.dewy.nbt.tags.primitive.StringTag;
-import io.lolyay.discordmsend.util.logging.Logger;
 import io.lolyay.discordmsend.util.nbt.NbtUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -31,10 +30,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 
-/**
- * A definitive implementation of a Minecraft-protocol-aware ByteBuf decorator.
- * Implements all major data types shown in the protocol documentation.
- */
 public class PacketByteBuf extends ByteBuf {
 
     private final ByteBuf parent;
@@ -44,10 +39,6 @@ public class PacketByteBuf extends ByteBuf {
         this.parent = parent;
     }
 
-    /**
-     * The conversion factor to turn the protocol's 1/256th-of-a-turn unit into degrees.
-     * (360 degrees / 256 units)
-     */
     public static final float DEGREES_PER_PROTOCOL_ANGLE_UNIT = 360.0f / 256.0f;
 
 
@@ -56,25 +47,19 @@ public class PacketByteBuf extends ByteBuf {
             ByteBuf fullNbtBuffer = null;
             ByteBuf strippedNbtBuffer = null;
             try {
-                // 1. Serialize the tag to a full byte array.
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 new Nbt().toStream(compoundTag, new DataOutputStream(baos));
                 byte[] fullNbtBytes = baos.toByteArray();
 
-                // 2. Wrap the full NBT data in a ByteBuf.
                 fullNbtBuffer = Unpooled.wrappedBuffer(fullNbtBytes);
 
-                // 3. Strip the root name, which creates a NEW buffer.
                 strippedNbtBuffer = NbtUtils.stripNbtRootName(fullNbtBuffer);
 
-                // 4. Write the final result to the main network buffer.
                 this.writeBytes(strippedNbtBuffer);
 
             } catch (IOException e) {
                 throw new EncoderException("Failed to write TextComponent NBT", e);
             } finally {
-                // 5. Release ALL temporary buffers created in the try block.
-                // This block is guaranteed to execute, preventing leaks and crashes.
                 if (fullNbtBuffer != null) {
                     fullNbtBuffer.release();
                 }
@@ -104,7 +89,6 @@ public class PacketByteBuf extends ByteBuf {
                 ByteBuf correctedNbtBuffer = NbtUtils.convertNetworkNbtToNormalNbt(nbt,"root");
                 DataInputStream dis = new DataInputStream(new ByteBufInputStream(correctedNbtBuffer, true));
                 NbtReader reader = new NbtReader(new TagTypeRegistry());
-                Logger.debug("Boutta read a " + this.getByte(this.readerIndex()) + " Not a 0x08");
                 CompoundTag tag = reader.fromStream(dis);
                 correctedNbtBuffer.release();
                 nbt.release();
@@ -152,10 +136,8 @@ public class PacketByteBuf extends ByteBuf {
     }
 
     public long[] readPrefixedLongArray() {
-        // 1. Read the length of the array, which is encoded as a VarInt.
         final int length = this.readVarInt();
 
-        // 2. Perform sanity checks.
         if (length < 0) {
             throw new DecoderException("The received array length is negative: " + length);
         }
@@ -168,7 +150,6 @@ public class PacketByteBuf extends ByteBuf {
             ));
         }
 
-        // 3. Create the long array and populate it.
         final long[] array = new long[length];
         for (int i = 0; i < length; i++) {
             array[i] = readLong();
@@ -203,7 +184,7 @@ public class PacketByteBuf extends ByteBuf {
         E[] constants = enumClass.getEnumConstants();
         int n = constants.length;
         int numBytes = (n + 7) / 8; // ceil(n / 8)
-        byte[] data = this.IreadBytes(numBytes); // Read fixed number of bytes
+        byte[] data = this.readRawBytes(numBytes); // Read fixed number of bytes
 
         EnumSet<E> set = EnumSet.noneOf(enumClass);
         for (int i = 0; i < n; i++) {
@@ -349,8 +330,8 @@ public class PacketByteBuf extends ByteBuf {
         return bs;
     }
 
-    public byte[] IreadBytes(int maxLength) {
-        byte[] bs = new byte[maxLength];
+    public byte[] readRawBytes(int length) {
+        byte[] bs = new byte[length];
         this.readBytes(bs);
         return bs;
     }
@@ -445,7 +426,6 @@ public class PacketByteBuf extends ByteBuf {
         for (byte b : data) {
             this.writeByte(b);
         }
-        Logger.nul("");
     }
 
     public List<String> readStringList() {
@@ -458,7 +438,6 @@ public class PacketByteBuf extends ByteBuf {
 
 
 
-    // --- DELEGATED METHODS REQUIRED BY ABSTRACT ByteBuf ---
 
     @Override public int capacity() { return parent.capacity(); }
     @Override public ByteBuf capacity(int newCapacity) { parent.capacity(newCapacity); return this; }

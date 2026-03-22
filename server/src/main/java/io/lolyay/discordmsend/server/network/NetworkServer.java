@@ -6,7 +6,7 @@ import io.lolyay.discordmsend.network.protocol.coder.PacketDecoder;
 import io.lolyay.discordmsend.network.protocol.coder.PacketEncoder;
 import io.lolyay.discordmsend.network.protocol.packet.PacketDirection;
 import io.lolyay.discordmsend.network.protocol.packet.PacketRegistry;
-import io.lolyay.discordmsend.server.Server;
+import io.lolyay.discordmsend.server.DstServer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -14,19 +14,21 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class NetworkServer {
     private final int port;
-    private final Server server;
+    private final DstServer dstServer;
     private final PacketRegistry registry;
+    @Getter
     private final List<Connection> connections = new ArrayList<>();
 
-    public NetworkServer(int port, PacketRegistry registry, Server server) {
+    public NetworkServer(int port, PacketRegistry registry, DstServer dstServer) {
         this.port = port;
-        this.server = server;
+        this.dstServer = dstServer;
         this.registry = registry;
     }
 
@@ -48,7 +50,7 @@ public class NetworkServer {
                                     .addLast("packetEncoder", new PacketEncoder(registry, connection, PacketDirection.CLIENT_BOUND))
                                     .addLast("handler", connection);
                             connection.setPhase(NetworkPhase.PRE_ENCRYPTION);
-                            connection.setListener(new ServerPreEncryptionListener(connection, server));
+                            connection.setListener(new ServerPreEncryptionListener(connection, dstServer));
                             connections.add(connection);
                         }
                     });
@@ -62,13 +64,9 @@ public class NetworkServer {
         }
     }
 
-    public List<Connection> getConnections() {
-        return connections;
-    }
-
     public void removeConnection(Connection connection) {
         connections.remove(connection);
-        server.removeClientByConnection(connection);
+        dstServer.removeClientByConnection(connection);
     }
 
 }

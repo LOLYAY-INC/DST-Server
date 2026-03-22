@@ -5,10 +5,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import javax.crypto.Cipher;
 
-/**
- * A Netty handler that encrypts outgoing ByteBufs.
- * This handler is inserted into the pipeline dynamically after the handshake.
- */
+
 public class PacketEncryptor extends MessageToByteEncoder<ByteBuf> {
     private final PacketEncryptionManager manager;
 

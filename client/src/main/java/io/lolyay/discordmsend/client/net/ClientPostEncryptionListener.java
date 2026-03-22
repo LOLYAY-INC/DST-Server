@@ -9,30 +9,27 @@ import io.lolyay.discordmsend.network.protocol.listeners.client.ClientPostEncryp
 import io.lolyay.discordmsend.network.protocol.packet.packets.C2S.postenc.EncHelloC2SPacket;
 import io.lolyay.discordmsend.network.protocol.packet.packets.C2S.postenc.KeepAliveC2SPacket;
 import io.lolyay.discordmsend.network.protocol.packet.packets.S2C.postenc.*;
-import io.lolyay.discordmsend.network.protocol.packet.packets.S2C.postenc.ev.*;
+import io.lolyay.discordmsend.network.protocol.packet.packets.S2C.postenc.events.*;
+import io.lolyay.discordmsend.network.protocol.request.IResponsePacket;
 import io.lolyay.discordmsend.obj.CUserData;
-import io.lolyay.discordmsend.util.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
 
-/**
- * A client-side listener that handles the LOGIN phase, including optional
- * authentication and encryption, according to the official protocol.
- */
+@Slf4j
 public class ClientPostEncryptionListener implements ClientPostEncryptionPacketListener {
     private final Connection connection;
     private final DstClient dstClient;
 
     public ClientPostEncryptionListener(Connection connection, DstClient dstClient) {
         this.connection = connection;
-        Logger.info("Waiting for EncHello...");
+        log.info("Waiting for EncHello...");
         this.dstClient = dstClient;
     }
 
 
     @Override
     public void onDisconnect(String reason) {
-        Logger.debug("Client: Disconnected during post encrpytion: " + reason);
+        log.debug("Client: Disconnected during post encrpytion: {}", reason);
         dstClient.getEventHandler().onDisconnect(reason);
-        // Here you would handle cleanup or notify the user.
     }
 
     @Override
@@ -43,16 +40,16 @@ public class ClientPostEncryptionListener implements ClientPostEncryptionPacketL
     @Override
     public void onEncHello(EncHelloS2CPacket packet) {
         if(Enviroment.PROTOCOL_VERSION != packet.serverProtocolId()){
-            Logger.err("Protocol version Missmatch: CLIENT:" + Enviroment.PROTOCOL_VERSION + " SERVER: " + packet.serverProtocolId());
-            getConnection().disconnect("Protocol Version Missmatch!");
-            throw new RuntimeException("Protocol version Missmatch");
+            log.error("Protocol version missmatch: CLIENT: {} | SERVER: {}", Enviroment.PROTOCOL_VERSION, packet.serverProtocolId());
+            getConnection().disconnect("Protocol Version missmatch!");
+            throw new RuntimeException("Protocol version missmatch");
         }
 
         CUserData userData = dstClient.getUserData();
-        connection.send(new EncHelloC2SPacket(userData.userAgent(), userData.userVersion(), userData.userAuthor(), userData.features()));
-        Logger.success("Connected to Server \"%s\". Server Version: \"%s\". YT-Source Version (Search): %s. Server Locale: %s".formatted(packet.serverName(), packet.serverVersion(), packet.ytSourceVersion(), packet.countryCode()));
-        Logger.info("Server Features: " + packet.features());
-        Logger.info("Server Plugins: " + packet.moddedInfo());
+        connection.send(new EncHelloC2SPacket(userData.userAgent(), userData.userVersion(), userData.userAuthor(), userData.features(), dstClient.getDiscordUserId()));
+        log.info("Connected to Server \"%s\". Server Version: \"%s\". YT-Source Version (Search): %s. Server Locale: %s".formatted(packet.serverName(), packet.serverVersion(), packet.ytSourceVersion(), packet.countryCode()));
+        log.info("Server Features: {}", packet.features());
+        log.info("Server Plugins: {}", packet.moddedInfo());
     }
 
     @Override
@@ -63,11 +60,9 @@ public class ClientPostEncryptionListener implements ClientPostEncryptionPacketL
     @Override
     public void onTrackDetails(TrackDetailsS2CPacket packet) {
         dstClient.onTrackInfo(packet);
-    }
-
-    @Override
-    public void onSearchResponse(TrackSearchResponseS2CPacket packet) {
-        dstClient.onTrackSearchResponse(packet);
+        if (dstClient.getRequestManager().handleResponse(packet)) {
+            return;
+        }
     }
 
     @Override
@@ -82,7 +77,7 @@ public class ClientPostEncryptionListener implements ClientPostEncryptionPacketL
 
     @Override
     public void onPong(PongS2CPacket packet) {
-        dstClient.setPongRecieved(System.currentTimeMillis());
+        dstClient.setPongReceived(packet.clientSentTimeMs(), packet.serverTimeMs());
     }
 
     @Override
@@ -116,18 +111,13 @@ public class ClientPostEncryptionListener implements ClientPostEncryptionPacketL
     }
 
     @Override
-    public void onSearchMultiple(SearchMultipleResponseS2CPacket packet) {
-        dstClient.onSearchMultipleResponse(packet);
+    public void onResponse(IResponsePacket packet) {
+        dstClient.getRequestManager().handleResponse(packet);
     }
 
     @Override
     public void onCacheExpire(CacheExpireS2C packet) {
         dstClient.onCacheExpire(packet);
-    }
-    
-    @Override
-    public void onLinkResponse(LinkResponseS2CPacket packet) {
-        dstClient.onLinkResponse(packet);
     }
 
     @Override

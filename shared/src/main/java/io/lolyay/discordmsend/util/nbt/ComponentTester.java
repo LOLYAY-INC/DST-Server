@@ -32,7 +32,6 @@ public class ComponentTester {
 
     @SuppressWarnings("unchecked")
     private static boolean compareTags(Tag expected, Tag actual) {
-        // Mismatched tag types fail unless both are compounds/lists handled separately
         if (expected instanceof CompoundTag expectedCompound && actual instanceof CompoundTag actualCompound)
             return matches(expectedCompound, actualCompound);
 
@@ -42,7 +41,6 @@ public class ComponentTester {
         if (expected instanceof ByteArrayTag || expected instanceof IntArrayTag || expected instanceof LongArrayTag)
             return Objects.equals(expected, actual); // strict
 
-        // For all primitives, tag type must match exactly and value equal
         if (!expected.getClass().equals(actual.getClass()))
             return false;
 
@@ -60,7 +58,6 @@ public class ComponentTester {
         if (expectedValues.isEmpty())
             return actualValues.isEmpty();
 
-        // For each expected element, at least one actual element must match
         for (Tag expectedElement : expectedValues) {
             boolean matched = false;
             for (Tag actualElement : actualValues) {

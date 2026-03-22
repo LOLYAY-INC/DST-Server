@@ -3,13 +3,14 @@ package io.lolyay.discordmsend.util.logging;
 import io.lolyay.discordmsend.network.protocol.codec.PacketByteBuf;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-
+@Slf4j
 public class BufDumper {
     public static void dump(String reason, ByteBuf buf){
         String hexdump = "DUMP at: " +
@@ -25,11 +26,9 @@ public class BufDumper {
     private static String getLast3StackTraceElements() {
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
 
-        // Skip first 2 elements: getStackTrace + this method
         int start = 2;
         int end = stack.length;
 
-        // Take last 3 elements if possible
         int count = Math.min(6, end - start);
         StringBuilder sb = new StringBuilder();
 
@@ -51,7 +50,7 @@ public class BufDumper {
             Path dumpDir = Path.of("logs/dumps");
             Files.createDirectories(dumpDir); // safe even if it already exists
             Files.writeString(dumpDir.resolve(fileNameWithTimestamp), text);
-            Logger.warn("Dump saved to: " + fileNameWithTimestamp);
+            log.warn("Dump saved to: " + fileNameWithTimestamp);
         } catch (IOException e) {
             e.printStackTrace();
         }

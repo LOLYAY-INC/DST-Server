@@ -8,20 +8,16 @@ import io.lolyay.discordmsend.network.protocol.packet.PacketCodec;
 public record PlayerPauseC2SPacket(
         long guildId
 ) implements Packet<ServerPostEncryptionPacketListener> {
-    /**
-     * The codec for the entire LoginSuccessS2CPacket.
-     */
+
     public static final PacketCodec<PlayerPauseC2SPacket> CODEC = PacketCodec.create(
             // Encoder
             (buf, packet) -> {
                 buf.writeLong(packet.guildId);
             },
             // Decoder
-            (buf) -> {
-                return new PlayerPauseC2SPacket(
-                        buf.readLong()
-                );
-            }
+            (buf) -> new PlayerPauseC2SPacket(
+                    buf.readLong()
+            )
     );
 
     @Override

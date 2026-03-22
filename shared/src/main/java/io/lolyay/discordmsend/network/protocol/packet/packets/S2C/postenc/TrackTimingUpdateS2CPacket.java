@@ -5,12 +5,9 @@ import io.lolyay.discordmsend.network.protocol.listeners.client.ClientPostEncryp
 import io.lolyay.discordmsend.network.protocol.packet.Packet;
 import io.lolyay.discordmsend.network.protocol.packet.PacketCodec;
 
-/**
- * Notifies the client that certain track IDs have been expired from the server cache.
- * The client should remove these entries from its local cache to stay synchronized.
- */
+
 public record TrackTimingUpdateS2CPacket(
-        TrackTimingType timingType,
+        TrackTimingUpdateType timingType,
         long guildId,
         long timestamp
 
@@ -24,16 +21,14 @@ public record TrackTimingUpdateS2CPacket(
                 buf.writeLong(packet.timestamp());
             },
             // Decoder
-            (buf) -> {
-                return new TrackTimingUpdateS2CPacket(
-                        TrackTimingType.values()[buf.readVarInt()],
-                        buf.readLong(),
-                        buf.readLong()
-                );
-            }
+            (buf) -> new TrackTimingUpdateS2CPacket(
+                    TrackTimingUpdateType.values()[buf.readVarInt()],
+                    buf.readLong(),
+                    buf.readLong()
+            )
     );
 
-    public static enum TrackTimingType{
+    public enum TrackTimingUpdateType {
         STARTED,
         PAUSED,
         RESUMED,

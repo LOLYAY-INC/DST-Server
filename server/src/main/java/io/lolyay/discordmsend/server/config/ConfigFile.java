@@ -25,11 +25,6 @@ public class ConfigFile {
     public static String s3SecretKey = "";
     public static String s3Region = "eu-central-1";
 
-    public static String cipherServerURl = "";
-    public static String cipherServerApiKey = "";
-    public static String youtubeOauthRefreshToken = "";
-
-    public static String countryCode = "US";
     public static String apiKey = "";
 
     private static final Path CONFIG_PATH = Path.of("config.yml");
@@ -60,12 +55,8 @@ public class ConfigFile {
         s3SecretKey = root.node("s3SecretKey").getString(s3SecretKey);
         s3Region = root.node("s3Region").getString(s3Region);
 
-        cipherServerURl = root.node("cipherServerURl").getString(cipherServerURl);
-        cipherServerApiKey = root.node("cipherServerApiKey").getString(cipherServerApiKey);
-        youtubeOauthRefreshToken = root.node("youtubeOauthRefreshToken").getString(youtubeOauthRefreshToken);
+        apiKey = root.node("apiKey").getString(apiKey);
 
-        countryCode = root.node("countryCode").getString(countryCode);
-        apiKey = root.node("apiKey").getString(countryCode);
     }
 
     /** Saves current static field values back to the config.yml */
@@ -89,13 +80,9 @@ public class ConfigFile {
         root.node("s3AccessKey").set(s3AccessKey);
         root.node("s3SecretKey").set(s3SecretKey);
         root.node("s3Region").set(s3Region);
-        
-        root.node("cipherServerURl").set(cipherServerURl);
-        root.node("cipherServerApiKey").set(cipherServerApiKey);
-        root.node("youtubeOauthRefreshToken").set(youtubeOauthRefreshToken);
-        
-        root.node("countryCode").set(countryCode);
+
         root.node("apiKey").set(apiKey);
+
 
         LOADER.save(root);
     }

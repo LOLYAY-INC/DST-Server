@@ -12,12 +12,8 @@ public record PlayerUpdateS2CPacket(
         long position,
         boolean hasTrack,
         int trackId
-
-
 ) implements Packet<ClientPostEncryptionPacketListener> {
-    /**
-     * The codec for the entire LoginSuccessS2CPacket.
-     */
+
     public static final PacketCodec<PlayerUpdateS2CPacket> CODEC = PacketCodec.create(
             // Encoder
             (buf, packet) -> {

@@ -3,7 +3,7 @@ package io.lolyay.discordmsend.server.cache;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import io.lolyay.discordmsend.util.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
 import java.nio.file.*;
@@ -12,17 +12,14 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * File system based implementation of AudioCacheManager.
- * Stores cached tracks in a "tracks" directory with a JSON index for hash -> filename mapping.
- */
+@Slf4j
 public class FileSystemAudioCacheManager implements AudioCacheManager {
     
     private final Path cacheDirectory;
     private final Path indexFile;
-    private final Map<String, String> trackIndex; // hash -> filename
+    private final Map<String, String> trackIndex;
     private final Gson gson;
-    private final Map<String, Path> pendingSaves; // trackUri -> temp file path
+    private final Map<String, Path> pendingSaves;
     
     public FileSystemAudioCacheManager(String cacheDirectoryPath) throws IOException {
         this.cacheDirectory = Paths.get(cacheDirectoryPath);
@@ -31,15 +28,13 @@ public class FileSystemAudioCacheManager implements AudioCacheManager {
         this.pendingSaves = new ConcurrentHashMap<>();
         this.gson = new GsonBuilder().setPrettyPrinting().create();
         
-        // Create cache directory if it doesn't exist
         if (!Files.exists(cacheDirectory)) {
             Files.createDirectories(cacheDirectory);
-            Logger.info("Created track cache directory: " + cacheDirectory.toAbsolutePath());
+            log.info("Created track cache directory: {}", cacheDirectory.toAbsolutePath());
         }
         
-        // Load existing index
         loadIndex();
-        Logger.info("Track cache initialized with " + trackIndex.size() + " cached tracks");
+        log.info("Track cache initialized with {} cached tracks", trackIndex.size());
     }
     
     @Override
@@ -71,7 +66,7 @@ public class FileSystemAudioCacheManager implements AudioCacheManager {
             throw new IOException("Track file missing: " + filename);
         }
         
-        Logger.info("Loading cached track: " + filename + " (" + Files.size(trackFile) / 1024 / 1024 + " MB)");
+        log.info("Loading cached track: " + filename + " (" + Files.size(trackFile) / 1024 / 1024 + " MB)");
         return new BufferedInputStream(Files.newInputStream(trackFile));
     }
     
@@ -84,7 +79,7 @@ public class FileSystemAudioCacheManager implements AudioCacheManager {
         // Store temp file path for finalization
         pendingSaves.put(trackUri, tempFile);
         
-        Logger.debug("Starting to cache track: " + hash);
+        log.debug("Starting to cache track: " + hash);
         return new BufferedOutputStream(Files.newOutputStream(tempFile, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING));
     }
     
@@ -93,7 +88,7 @@ public class FileSystemAudioCacheManager implements AudioCacheManager {
         Path tempFile = pendingSaves.remove(trackUri);
         
         if (tempFile == null) {
-            Logger.warn("No pending save found for track: " + trackUri);
+            log.warn("No pending save found for track: " + trackUri);
             return;
         }
         
@@ -103,35 +98,32 @@ public class FileSystemAudioCacheManager implements AudioCacheManager {
                 if (Files.exists(tempFile)) {
                     Files.delete(tempFile);
                 }
-                Logger.debug("Deleted incomplete cache file: " + tempFile.getFileName());
+                log.debug("Deleted incomplete cache file: " + tempFile.getFileName());
             } catch (IOException e) {
-                Logger.err("Failed to delete incomplete cache file: " + e.getMessage());
+                log.error("Failed to delete incomplete cache file: " + e.getMessage());
             }
             return;
         }
         
         try {
-            // Move temp file to final location
             String hash = computeHash(trackUri);
             String finalFilename = hash + ".pcm";
             Path finalFile = cacheDirectory.resolve(finalFilename);
             
-            // If file already exists, delete it first
             if (Files.exists(finalFile)) {
                 Files.delete(finalFile);
             }
             
             Files.move(tempFile, finalFile, StandardCopyOption.REPLACE_EXISTING);
             
-            // Update index
             trackIndex.put(hash, finalFilename);
             saveIndex();
             
             long sizeKB = Files.size(finalFile) / 1024;
-            Logger.info("Successfully cached track: " + finalFilename + " (" + sizeKB + " KB)");
+            log.info("Successfully cached track: " + finalFilename + " (" + sizeKB + " KB)");
             
         } catch (IOException e) {
-            Logger.err("Failed to finalize track cache: " + e.getMessage());
+            log.error("Failed to finalize track cache: " + e.getMessage());
             try {
                 Files.deleteIfExists(tempFile);
             } catch (IOException ex) {
@@ -155,12 +147,12 @@ public class FileSystemAudioCacheManager implements AudioCacheManager {
             saveIndex();
             
             if (deleted) {
-                Logger.info("Deleted cached track: " + filename);
+                log.info("Deleted cached track: " + filename);
             }
             return deleted;
             
         } catch (IOException e) {
-            Logger.err("Failed to delete track: " + e.getMessage());
+            log.error("Failed to delete track: " + e.getMessage());
             return false;
         }
     }
@@ -180,7 +172,7 @@ public class FileSystemAudioCacheManager implements AudioCacheManager {
                     })
                     .sum();
         } catch (IOException e) {
-            Logger.err("Failed to calculate cache size: " + e.getMessage());
+            log.error("Failed to calculate cache size: " + e.getMessage());
             return 0;
         }
     }
@@ -195,16 +187,16 @@ public class FileSystemAudioCacheManager implements AudioCacheManager {
                         try {
                             Files.delete(p);
                         } catch (IOException e) {
-                            Logger.err("Failed to delete: " + p.getFileName());
+                            log.error("Failed to delete: " + p.getFileName());
                         }
                     });
             
             trackIndex.clear();
             saveIndex();
-            Logger.info("Cache cleared");
+            log.info("Cache cleared");
             
         } catch (IOException e) {
-            Logger.err("Failed to clear cache: " + e.getMessage());
+            log.error("Failed to clear cache: " + e.getMessage());
         }
     }
     
@@ -214,7 +206,6 @@ public class FileSystemAudioCacheManager implements AudioCacheManager {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] hash = md.digest(trackUri.getBytes());
             
-            // Convert to hex string
             StringBuilder hexString = new StringBuilder();
             for (byte b : hash) {
                 String hex = Integer.toHexString(0xff & b);
@@ -222,11 +213,9 @@ public class FileSystemAudioCacheManager implements AudioCacheManager {
                 hexString.append(hex);
             }
             
-            // Use first 16 characters for reasonable filename length
             return hexString.substring(0, 16);
             
         } catch (NoSuchAlgorithmException e) {
-            // Fallback to simple hash
             return Integer.toHexString(trackUri.hashCode());
         }
     }
@@ -242,7 +231,7 @@ public class FileSystemAudioCacheManager implements AudioCacheManager {
                 trackIndex.putAll(loaded);
             }
         } catch (IOException e) {
-            Logger.err("Failed to load cache index: " + e.getMessage());
+            log.error("Failed to load cache index: " + e.getMessage());
         }
     }
     
@@ -250,7 +239,7 @@ public class FileSystemAudioCacheManager implements AudioCacheManager {
         try (Writer writer = Files.newBufferedWriter(indexFile, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
             gson.toJson(trackIndex, writer);
         } catch (IOException e) {
-            Logger.err("Failed to save cache index: " + e.getMessage());
+            log.error("Failed to save cache index: " + e.getMessage());
         }
     }
 }

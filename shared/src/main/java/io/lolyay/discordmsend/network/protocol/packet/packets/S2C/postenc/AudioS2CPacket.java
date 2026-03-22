@@ -4,10 +4,12 @@ package io.lolyay.discordmsend.network.protocol.packet.packets.S2C.postenc;
 import io.lolyay.discordmsend.network.protocol.listeners.client.ClientPostEncryptionPacketListener;
 import io.lolyay.discordmsend.network.protocol.packet.Packet;
 import io.lolyay.discordmsend.network.protocol.packet.PacketCodec;
+import io.lolyay.discordmsend.obj.AudioCodec;
 
 public record AudioS2CPacket(
         long guildId,
-        byte[] opus,
+        AudioCodec codec,
+        byte[] audioBytes,
         long sequence
 ) implements Packet<ClientPostEncryptionPacketListener> {
     /**
@@ -17,14 +19,18 @@ public record AudioS2CPacket(
             // Encoder
             (buf, packet) -> {
                 buf.writeLong(packet.guildId);
-                buf.writeVarInt(packet.opus.length);
-                buf.writeBytes(packet.opus);
+                buf.writeVarInt(packet.codec.ordinal());
+                buf.writeVarInt(packet.audioBytes.length);
+                buf.writeBytes(packet.audioBytes);
                 buf.writeLong(packet.sequence);
             },
             // Decoder
-            (buf) -> {
-                return new AudioS2CPacket(buf.readLong(), buf.IreadBytes(buf.readVarInt()), buf.readLong());
-            }
+            (buf) -> new AudioS2CPacket(
+                    buf.readLong(),
+                    AudioCodec.values()[buf.readVarInt()],
+                    buf.readRawBytes(buf.readVarInt()),
+                    buf.readLong()
+            )
     );
 
     @Override

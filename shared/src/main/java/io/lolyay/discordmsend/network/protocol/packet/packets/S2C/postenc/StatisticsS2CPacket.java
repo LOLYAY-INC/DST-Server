@@ -12,9 +12,6 @@ public record StatisticsS2CPacket(
         int players,
         int clients
 ) implements Packet<ClientPostEncryptionPacketListener> {
-    /**
-     * The codec for the entire LoginSuccessS2CPacket.
-     */
     public static final PacketCodec<StatisticsS2CPacket> CODEC = PacketCodec.create(
             // Encoder
             (buf, packet) -> {

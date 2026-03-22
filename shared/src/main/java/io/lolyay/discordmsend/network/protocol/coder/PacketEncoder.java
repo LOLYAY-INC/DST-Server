@@ -10,11 +10,13 @@ import io.lolyay.discordmsend.network.protocol.packet.PacketCodec;
 import io.lolyay.discordmsend.network.protocol.packet.PacketDirection;
 import io.lolyay.discordmsend.network.protocol.packet.PacketRegistry;
 import io.lolyay.discordmsend.util.logging.BufDumper;
-import io.lolyay.discordmsend.util.logging.Logger;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class PacketEncoder extends MessageToByteEncoder<Packet<?>> {
 
     private final PacketRegistry registry;
@@ -35,14 +37,13 @@ public class PacketEncoder extends MessageToByteEncoder<Packet<?>> {
 
             buf.writeVarInt(packetId);
 
-            // This is safe because the registry guarantees the codec matches the packet type.
             @SuppressWarnings("unchecked")
             var codec = (PacketCodec<Packet<?>>) registry.getCodec(connection.getPhase(), this.direction, packetId);
 
             codec.encoder().accept(buf, packet);
 
         } catch (Exception e){
-            Logger.err("Failed to encode packet: " + packet.getClass().getSimpleName(), e);
+            log.error("Failed to encode packet: {}", packet.getClass().getSimpleName(), e);
             e.printStackTrace();
             throw e;
         }

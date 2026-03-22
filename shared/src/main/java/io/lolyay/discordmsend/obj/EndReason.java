@@ -2,10 +2,8 @@ package io.lolyay.discordmsend.obj;
 
 public enum EndReason {
     FINISHED(true),
-    LOAD_FAILED(true),
     STOPPED(false),
-    REPLACED(false),
-    CLEANUP(false);
+    REPLACED(false);
 
     public final boolean mayStartNext;
 

@@ -6,7 +6,7 @@ import io.lolyay.discordmsend.network.protocol.packet.Packet;
 import io.lolyay.discordmsend.network.protocol.packet.PacketCodec;
 import io.lolyay.discordmsend.network.types.ModdedInfo;
 import io.lolyay.discordmsend.network.types.ServerFeatures;
-import io.lolyay.discordmsend.util.logging.Logger;
+
 
 public record EncHelloS2CPacket(
         String serverName,
@@ -19,9 +19,7 @@ public record EncHelloS2CPacket(
 
 
 ) implements Packet<ClientPostEncryptionPacketListener> {
-    /**
-     * The codec for the entire LoginSuccessS2CPacket.
-     */
+
     public static final PacketCodec<EncHelloS2CPacket> CODEC = PacketCodec.create(
             // Encoder
             (buf, packet) -> {
@@ -34,17 +32,15 @@ public record EncHelloS2CPacket(
                 buf.writeString(packet.countryCode());
             },
             // Decoder
-            (buf) -> {
-                return new EncHelloS2CPacket(
-                        buf.readString(),
-                        buf.readString(),
-                        buf.readShort(),
-                        new ServerFeatures(buf.readByte()),
-                        buf.readString(),
-                        new ModdedInfo(buf),
-                        buf.readString()
-                );
-            }
+            (buf) -> new EncHelloS2CPacket(
+                    buf.readString(),
+                    buf.readString(),
+                    buf.readShort(),
+                    new ServerFeatures(buf.readByte()),
+                    buf.readString(),
+                    new ModdedInfo(buf),
+                    buf.readString()
+            )
     );
 
     @Override

@@ -3,11 +3,7 @@ package io.lolyay.discordmsend.network.protocol.codec;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
-/**
- * A specialized, lightweight NBT parser that reads a "Network NBT" structure from a
- * source buffer and copies it verbatim into a new, self-contained destination buffer.
- * It correctly handles the modern (post-1.20.2) protocol where the root TAG_COMPOUND is unnamed.
- */
+
 public class MiniNBT {
     // NBT Tag Type IDs
     private static final byte TAG_END_ID = 0x00;
@@ -31,11 +27,6 @@ public class MiniNBT {
         this.source = source;
     }
 
-    /**
-     * Parses the Network NBT structure. It assumes the first byte is the
-     * root tag ID, which is expected to be TAG_COMPOUND and is UNNAMED.
-     * @return A new ByteBuf containing only the parsed NBT data.
-     */
     public ByteBuf parse() {
         byte rootTagId = source.readByte();
         destination.writeByte(rootTagId);
@@ -48,36 +39,22 @@ public class MiniNBT {
             copyTagPayload(TAG_STRING_ID);
             return destination;
         }
-
-        // According to the modern network protocol, the root tag MUST be a compound tag.
         if (rootTagId != TAG_COMPOUND_ID) {
             throw new IllegalStateException("Network NBT root tag must be TAG_COMPOUND, but was " + rootTagId);
         }
-
-        // --- THE DEFINITIVE FIX ---
-        // For a network NBT structure, the root tag is unnamed.
-        // We do NOT copy a tag name. We immediately start copying the compound's payload.
         copyCompoundPayload();
-
-        // Once the root compound's payload is fully copied (ending in its own TAG_END),
-        // our job is done. We return the result.
         return destination;
     }
 
-    /**
-     * Copies the payload of a compound tag. It repeatedly copies inner tags
-     * (which ARE named) until it encounters this compound's TAG_END.
-     */
     private void copyCompoundPayload() {
         while (true) {
             byte tagId = source.readByte();
             destination.writeByte(tagId);
 
             if (tagId == TAG_END_ID) {
-                break; // Found the end of this compound tag.
+                break;
             }
 
-            // Inner tags are always named.
             copyTagName();
             copyTagPayload(tagId);
         }
@@ -89,11 +66,6 @@ public class MiniNBT {
         destination.writeBytes(source, nameLength);
     }
 
-    /**
-     * Copies the data payload for a specific tag type.
-     * This method does NOT handle the tag's ID or name, only its data.
-     * @param tagId The ID of the tag type to copy.
-     */
     private void copyTagPayload(byte tagId) {
         switch (tagId) {
             case TAG_END_ID: // Should not be handled here, but as a safeguard.
@@ -134,13 +106,11 @@ public class MiniNBT {
                 int length = source.readInt();
                 destination.writeInt(length);
                 for (int i = 0; i < length; i++) {
-                    // List items are unnamed payloads.
                     copyTagPayload(listTagId);
                 }
                 break;
             }
             case TAG_COMPOUND_ID:
-                // A nested compound tag.
                 copyCompoundPayload();
                 break;
             case TAG_INT_ARRAY_ID: {

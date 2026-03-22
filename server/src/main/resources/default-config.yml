@@ -47,6 +47,26 @@ cipherServerApiKey: ''
 youtubeOauthRefreshToken: ''
 
 # ========================================
+# Deezer Configuration
+# ========================================
+
+# Deezer ARL token for authenticated downloads (leave empty to disable)
+deezerArl: ''
+
+# ========================================
+# Spotify Configuration
+# ========================================
+
+# Spotify Client ID (from Spotify Developer Dashboard)
+spClientId: ''
+
+# Spotify Client Secret (from Spotify Developer Dashboard)
+spClientSecret: ''
+
+# Spotify delegate type - which provider to use for actual playback (YOUTUBE / DEEZER)
+spDelegateType: DEEZER
+
+# ========================================
 # General Settings
 # ========================================
 
@@ -56,3 +76,4 @@ countryCode: US
 
 # Server API Key, leave blank to make your server Public
 apiKey: ''
+

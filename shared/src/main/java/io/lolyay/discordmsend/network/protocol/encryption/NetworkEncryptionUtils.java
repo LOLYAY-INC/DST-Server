@@ -24,14 +24,12 @@ public class NetworkEncryptionUtils {
     private static final int SIZE = 16;
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    /** Generate a random 128-byte nonce */
     public static byte[] generateNonce() {
         byte[] nonce = new byte[SIZE];
         RANDOM.nextBytes(nonce);
         return nonce;
     }
 
-    /** XOR two 128-byte arrays */
     public static byte[] xor(byte[] a, byte[] b) {
         if (a.length != SIZE || b.length != SIZE) {
             throw new IllegalArgumentException("Both arrays must be 128 bytes");
@@ -53,7 +51,6 @@ public class NetworkEncryptionUtils {
     }
 
     public static byte[] crypt(int opMode, Key key, byte[] data) throws GeneralSecurityException {
-        // Explicitly specify the padding as per the protocol documentation
         Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
         cipher.init(opMode, key);
         return cipher.doFinal(data);

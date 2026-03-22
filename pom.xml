@@ -7,7 +7,7 @@
 
     <groupId>io.lolyay.dct</groupId>
     <artifactId>DiscordToucher</artifactId>
-    <version>5.0.8</version>
+    <version>9.0.2</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -21,13 +21,19 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <netty.version>4.1.115.Final</netty.version>
+        <lombok.version>1.18.38</lombok.version>
     </properties>
 
     <repositories>
+
         <repository> <id>maven-lavalink</id> <url>https://maven.lavalink.dev/releases</url> </repository> <repository> <id>jitpack.io</id> <url>https://jitpack.io</url> </repository>
         <repository>
             <id>lolyay</id>
             <url>https://maven.lolyay.dev/releases</url>
+        </repository>
+        <repository>
+            <id>assasas</id>
+            <url>https://maven.lavalink.dev/snapshots</url>
         </repository>
     </repositories>
     <distributionManagement>
@@ -60,6 +66,35 @@
             <artifactId>netty-all</artifactId>
             <version>${netty.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.fusesource.jansi</groupId>
+            <artifactId>jansi</artifactId>
+            <version>2.4.1</version>
+        </dependency>
 
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

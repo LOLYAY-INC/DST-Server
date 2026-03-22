@@ -12,7 +12,7 @@ public record EncryptionResponseC2SPacket(byte[] sharedSecret) implements Packet
                 buf.writeBytes(packet.sharedSecret);
             },
             (buf) -> new EncryptionResponseC2SPacket(
-                    buf.IreadBytes(128)
+                    buf.readRawBytes(128)
             )
     );
 

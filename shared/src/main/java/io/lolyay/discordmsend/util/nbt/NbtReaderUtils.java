@@ -2,7 +2,7 @@ package io.lolyay.discordmsend.util.nbt;
 
 import dev.dewy.nbt.api.Tag;
 import dev.dewy.nbt.tags.primitive.*;
-import io.lolyay.discordmsend.util.logging.Logger;
+
 import io.netty.buffer.ByteBuf;
 
 import java.io.IOException;
@@ -17,34 +17,25 @@ public final class NbtReaderUtils {
 
     /**
      * Calculates the size of the next NBT tag in the buffer without advancing the reader index.
-     * It expects the data to start with the root tag's type ID, followed immediately by its payload.
+     * It expects the positionMs to start with the root tag's type ID, followed immediately by its payload.
      *
-     * @param buf The buffer containing the NBT data.
+     * @param buf The buffer containing the NBT positionMs.
      * @return The size in bytes of the complete NBT tag.
-     * @throws IOException if the data is malformed or an unknown tag type is encountered.
+     * @throws IOException if the positionMs is malformed or an unknown tag type is encountered.
      */
     public static int getNextTagSize(ByteBuf buf) throws IOException {
         int originalReaderIndex = buf.readerIndex();
         try {
             if (!buf.isReadable()) {
-                return 0; // No data, size is 0.
+                return 0;
             }
-
-            // 1. Read the root tag's type ID.
             byte rootType = buf.readByte();
-
-            // 2. If it's TAG_End, the total size is just 1 byte.
             if (rootType == 0) {
                 return 1;
             }
-
-            // 3. Skip the payload corresponding to the root type.
             skipPayload(buf, rootType, 0);
-
-            // 4. The total size is the number of bytes we just read/skipped.
             return buf.readerIndex() - originalReaderIndex;
         } finally {
-            // 5. Always reset the reader index to its original position.
             buf.readerIndex(originalReaderIndex);
         }
     }
@@ -61,7 +52,6 @@ public final class NbtReaderUtils {
             return; // TAG_End has no name or payload.
         }
 
-        // Skip name
         if (!buf.isReadable(2)) throw new IOException("Cannot read NBT tag name length.");
         int nameLength = buf.readUnsignedShort();
         if (nameLength < 0) throw new IOException("Invalid negative name length: " + nameLength);
@@ -114,7 +104,7 @@ public final class NbtReaderUtils {
                 while (true) {
                     byte nextTagType = buf.getByte(buf.readerIndex());
                     if (nextTagType == 0) {
-                        buf.skipBytes(1); // Consume the TAG_End.
+                        buf.skipBytes(1);
                         break;
                     }
                     skipNamedTag(buf, depth);

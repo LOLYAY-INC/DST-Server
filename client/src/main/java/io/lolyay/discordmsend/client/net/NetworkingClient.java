@@ -9,7 +9,7 @@ import io.lolyay.discordmsend.network.protocol.coder.PacketDecoder;
 import io.lolyay.discordmsend.network.protocol.coder.PacketEncoder;
 import io.lolyay.discordmsend.network.protocol.packet.PacketDirection;
 import io.lolyay.discordmsend.network.protocol.packet.PacketRegistry;
-import io.lolyay.discordmsend.util.logging.Logger;
+
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -20,7 +20,9 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class NetworkingClient {
     private final String host;
     private final int port;
@@ -91,7 +93,7 @@ public class NetworkingClient {
                     });
 
             ChannelFuture f = b.connect(host, port).sync();
-            Logger.log("Client connected to " + host + ":" + port);
+            log.info("Client connected to " + host + ":" + port);
             connected = true;
 
             // Wait for the connection to close

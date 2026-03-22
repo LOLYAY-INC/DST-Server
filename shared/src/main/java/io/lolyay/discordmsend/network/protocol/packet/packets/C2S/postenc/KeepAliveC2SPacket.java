@@ -8,18 +8,12 @@ import io.lolyay.discordmsend.network.protocol.packet.PacketCodec;
 public record KeepAliveC2SPacket(
         long keepAliveId
 ) implements Packet<ServerPostEncryptionPacketListener> {
-    /**
-     * The codec for the entire LoginSuccessS2CPacket.
-     */
+
     public static final PacketCodec<KeepAliveC2SPacket> CODEC = PacketCodec.create(
             // Encoder
-            (buf, packet) -> {
-                buf.writeLong(packet.keepAliveId);
-            },
+            (buf, packet) -> buf.writeLong(packet.keepAliveId),
             // Decoder
-            (buf) -> {
-                return new KeepAliveC2SPacket(buf.readLong());
-            }
+            (buf) -> new KeepAliveC2SPacket(buf.readLong())
     );
 
     @Override

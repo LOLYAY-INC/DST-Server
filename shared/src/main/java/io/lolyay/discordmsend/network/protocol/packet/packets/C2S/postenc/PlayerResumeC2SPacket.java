@@ -9,20 +9,16 @@ public record PlayerResumeC2SPacket(
         long guildId
 
 ) implements Packet<ServerPostEncryptionPacketListener> {
-    /**
-     * The codec for the entire LoginSuccessS2CPacket.
-     */
+
     public static final PacketCodec<PlayerResumeC2SPacket> CODEC = PacketCodec.create(
             // Encoder
             (buf, packet) -> {
                 buf.writeLong(packet.guildId);
             },
             // Decoder
-            (buf) -> {
-                return new PlayerResumeC2SPacket(
-                        buf.readLong()
-                );
-            }
+            (buf) -> new PlayerResumeC2SPacket(
+                    buf.readLong()
+            )
     );
 
     @Override

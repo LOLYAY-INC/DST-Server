@@ -10,11 +10,10 @@ public record EncHelloC2SPacket(
         String userAgent,
         String userVersion,
         String userAuthor,
-        ClientFeatures features
+        ClientFeatures features,
+        long botId
 ) implements Packet<ServerPostEncryptionPacketListener> {
-    /**
-     * The codec for the entire LoginSuccessS2CPacket.
-     */
+
     public static final PacketCodec<EncHelloC2SPacket> CODEC = PacketCodec.create(
             // Encoder
             (buf, packet) -> {
@@ -22,16 +21,16 @@ public record EncHelloC2SPacket(
                 buf.writeString(packet.userVersion);
                 buf.writeString(packet.userAuthor);
                 buf.writeByte(packet.features.toByte());
+                buf.writeLong(packet.botId);
             },
             // Decoder
-            (buf) -> {
-                return new EncHelloC2SPacket(
-                        buf.readString(),
-                        buf.readString(),
-                        buf.readString(),
-                        new ClientFeatures(buf.readByte())
-                );
-            }
+            (buf) -> new EncHelloC2SPacket(
+                    buf.readString(),
+                    buf.readString(),
+                    buf.readString(),
+                    new ClientFeatures(buf.readByte()),
+                    buf.readLong()
+            )
     );
 
     @Override

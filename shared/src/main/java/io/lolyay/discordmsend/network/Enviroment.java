@@ -4,5 +4,5 @@ public enum Enviroment {
     CLIENT,
     SERVER;
 
-    public static final int PROTOCOL_VERSION = 32;
+    public static final int PROTOCOL_VERSION = 108;
 }

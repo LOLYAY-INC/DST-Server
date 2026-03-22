@@ -8,17 +8,20 @@ import io.lolyay.discordmsend.network.protocol.encryption.PacketEncryptor;
 import io.lolyay.discordmsend.network.protocol.packet.Packet;
 import io.lolyay.discordmsend.network.protocol.packet.PacketListener;
 import io.lolyay.discordmsend.network.protocol.packet.packets.C2S.preenc.HandShakeC2SPacket;
-import io.lolyay.discordmsend.network.types.ClientFeatures;
-import io.lolyay.discordmsend.util.logging.Logger;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.SimpleChannelInboundHandler;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import java.security.GeneralSecurityException;
-
+@Slf4j
+@Getter
+@Setter
 public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
     private final Channel channel;
@@ -33,10 +36,19 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
     private String host;
     private int port;
 
-    public Connection(Channel channel, Enviroment environment) { // for server
+    public Connection(Channel channel, Enviroment environment) {
         this.channel = channel;
         this.APIKEY = null;
         this.environment = environment;
+    }
+
+    public Connection(Channel channel, Enviroment environment, int protocolVersion, String host, int port, String APIKEY) {
+        this.channel = channel;
+        this.APIKEY = APIKEY;
+        this.environment = environment;
+        this.protocolVersion = protocolVersion;
+        this.host = host;
+        this.port = port;
     }
 
     @Override
@@ -49,43 +61,22 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         return channel.isActive();
     }
 
-    // New constructor for the client to pass in required data
-    public Connection(Channel channel, Enviroment environment, int protocolVersion, String host, int port, String APIKEY) {
-        this.channel = channel;
-        this.APIKEY = APIKEY;
-        this.environment = environment;
-        this.protocolVersion = protocolVersion;
-        this.host = host;
-        this.port = port;
-    }
 
     public long getTimeSinceLastPacketRec(){
         return (System.currentTimeMillis() - timeSinceLastPacket);
     }
 
-    /**
-     * This is the concrete method that is called ONCE the connection is active.
-     * This is the perfect place to send the initial packets.
-     */
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        // Only the client should send initial packets. The server waits.
-        Logger.warn( environment.name() + " Conncted .");
         if (environment != Enviroment.CLIENT) {
             return;
         }
 
-        // 1. Create and send the Handshake packet
         HandShakeC2SPacket handshakePacket = new HandShakeC2SPacket(protocolVersion, host, APIKEY, port);
         setPhase(NetworkPhase.PRE_ENCRYPTION);
         send(handshakePacket);
-        Logger.debug("Client: Sent handshake, waiting for encryption packet");
     }
 
-    public void setPhase(NetworkPhase phase) {
-        this.phase = phase;
-        Logger.log("Connection to " + channel.remoteAddress() + " transitioned to phase " + phase + " on " + environment);
-    }
 
     public void enableEncryption(SecretKey secretKey) throws GeneralSecurityException {
         Cipher encryptCipher = NetworkEncryptionUtils.createStreamCipher(Cipher.ENCRYPT_MODE, secretKey);
@@ -93,25 +84,11 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
         ChannelPipeline pipeline = this.channel.pipeline();
 
-
         pipeline.addBefore("frameDecoder", "decryptor", new PacketDecryptor(decryptCipher));
         pipeline.addBefore("frameEncoder", "encryptor", new PacketEncryptor(encryptCipher));
-
-        Logger.log("Encryption enabled. Crypto handlers correctly added to pipeline on " + environment.name());
-    }
-
-    public Enviroment getEnvironment() {
-        return environment;
     }
 
 
-    public void setListener(PacketListener listener) {
-        this.listener = listener;
-    }
-
-    public NetworkPhase getPhase() {
-        return phase;
-    }
 
     public void send(Packet<?> packet) {
         if (packet == null) {
@@ -119,22 +96,22 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         }
         if (channel.isActive()) {
             channel.writeAndFlush(packet).addListener(future -> {
-                if (future.isSuccess()) {
-                } else {
-                    Logger.err("Failed to send packet: " + packet.getClass().getSimpleName());
+                if (!future.isSuccess()) {
+                    log.error("Failed to send packet: {}", packet.getClass().getSimpleName());
                     future.cause().printStackTrace();
                 }
             });
         } else {
-            Logger.warn("Channel not active, cannot send: " + packet.getClass().getSimpleName());
+            log.warn("Channel not active, cannot send: {}", packet.getClass().getSimpleName());
         }
     }
 
     public void disconnect(String reason) {
         if (channel.isActive()) {
-            Logger.log("Disconnecting " + channel.remoteAddress() + ": " + reason);
+            log.info("Disconnecting {}: {}", channel.remoteAddress(), reason);
             channel.close();
-        }listener.onDisconnect(reason);
+        }
+        listener.onDisconnect(reason);
     }
 
     @Override
@@ -144,27 +121,20 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
         if (listener != null)
                 dispatch(packet, this.listener);
         else
-            Logger.warn("[CONNECTION] No listener set for packet: " + packet.getClass().getSimpleName());
+            log.warn("No listener set for packet: {}", packet.getClass().getSimpleName());
     }
-    /**
-     * A private helper method to handle the unsafe generic cast required by the
-     * Visitor pattern. By using raw types (Packet without <?>) and suppressing
-     * the warning here, we contain the "unsafe" part of the code in one place.
-     * Our design guarantees this is safe because the listener is always updated
-     * according to the current NetworkPhase.
-     */
-    @SuppressWarnings("unchecked")
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private static void dispatch(Packet packet, PacketListener listener) {
-        // Debug logging for SetSourceC2SPacket
         packet.apply(listener);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         if (cause instanceof java.io.IOException) {
-            System.err.println("Connection I/O error for " + channel.remoteAddress() + ": " + cause.getMessage());
+            log.error("Connection I/O error for {}: {}", channel.remoteAddress(), cause.getMessage());
         } else {
-            System.err.println("An exception occurred in connection " + channel.remoteAddress());
+            log.error("An exception occurred in connection {}", channel.remoteAddress());
             cause.printStackTrace();
         }
         disconnect("Internal error");

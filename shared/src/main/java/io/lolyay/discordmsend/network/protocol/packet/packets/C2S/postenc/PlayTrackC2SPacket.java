@@ -9,9 +9,7 @@ public record PlayTrackC2SPacket(
         int trackId,
         long guildId
 ) implements Packet<ServerPostEncryptionPacketListener> {
-    /**
-     * The codec for the entire LoginSuccessS2CPacket.
-     */
+
     public static final PacketCodec<PlayTrackC2SPacket> CODEC = PacketCodec.create(
             // Encoder
             (buf, packet) -> {
@@ -19,12 +17,10 @@ public record PlayTrackC2SPacket(
                 buf.writeLong(packet.guildId);
             },
             // Decoder
-            (buf) -> {
-                return new PlayTrackC2SPacket(
-                        buf.readVarInt(),
-                        buf.readLong()
-                );
-            }
+            (buf) -> new PlayTrackC2SPacket(
+                    buf.readVarInt(),
+                    buf.readLong()
+            )
     );
 
     @Override

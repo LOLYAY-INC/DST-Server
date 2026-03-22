@@ -4,22 +4,21 @@ package io.lolyay.discordmsend.network.protocol.packet.packets.C2S.postenc;
 import io.lolyay.discordmsend.network.protocol.listeners.server.ServerPostEncryptionPacketListener;
 import io.lolyay.discordmsend.network.protocol.packet.Packet;
 import io.lolyay.discordmsend.network.protocol.packet.PacketCodec;
+import io.lolyay.discordmsend.network.protocol.request.IRequestPacket;
+
+import static io.lolyay.discordmsend.network.protocol.request.SearchRequest.EXCHANGE_TYPE;
+
 
 public record SearchMultipleC2SPacket(
         String query,
-        boolean music,
         int sequence,
         boolean details,
         int maxResults
-) implements Packet<ServerPostEncryptionPacketListener> {
-    /**
-     * The codec for the entire LoginSuccessS2CPacket.
-     */
+) implements Packet<ServerPostEncryptionPacketListener>, IRequestPacket {
     public static final PacketCodec<SearchMultipleC2SPacket> CODEC = PacketCodec.create(
             // Encoder
             (buf, packet) -> {
                 buf.writeString(packet.query());
-                buf.writeBoolean(packet.music);
                 buf.writeVarInt(packet.sequence);
                 buf.writeBoolean(packet.details);
                 buf.writeVarInt(packet.maxResults);
@@ -28,7 +27,6 @@ public record SearchMultipleC2SPacket(
             (buf) -> {
                 return new SearchMultipleC2SPacket(
                         buf.readString(),
-                        buf.readBoolean(),
                         buf.readVarInt(),
                         buf.readBoolean(),
                         buf.readVarInt()
@@ -37,7 +35,12 @@ public record SearchMultipleC2SPacket(
     );
 
     @Override
+    public int getExchangeType() {
+        return EXCHANGE_TYPE;
+    }
+
+    @Override
     public void apply(ServerPostEncryptionPacketListener listener) {
-        listener.onSearchMultiple(this);
+        listener.onRequest(this);
     }
 }

@@ -10,9 +10,7 @@ public record PlayerSetVolumeC2SPacket(
         int volume
 
 ) implements Packet<ServerPostEncryptionPacketListener> {
-    /**
-     * The codec for the entire LoginSuccessS2CPacket.
-     */
+
     public static final PacketCodec<PlayerSetVolumeC2SPacket> CODEC = PacketCodec.create(
             // Encoder
             (buf, packet) -> {
@@ -20,12 +18,10 @@ public record PlayerSetVolumeC2SPacket(
                 buf.writeVarInt(packet.volume);
             },
             // Decoder
-            (buf) -> {
-                return new PlayerSetVolumeC2SPacket(
-                        buf.readLong(),
-                        buf.readVarInt()
-                );
-            }
+            (buf) -> new PlayerSetVolumeC2SPacket(
+                    buf.readLong(),
+                    buf.readVarInt()
+            )
     );
 
     @Override

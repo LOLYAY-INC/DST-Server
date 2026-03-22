@@ -9,20 +9,16 @@ public record PingC2SPacket(
         long data
 
 ) implements Packet<ServerPostEncryptionPacketListener> {
-    /**
-     * The codec for the entire LoginSuccessS2CPacket.
-     */
+
     public static final PacketCodec<PingC2SPacket> CODEC = PacketCodec.create(
             // Encoder
             (buf, packet) -> {
                 buf.writeLong(packet.data);
             },
             // Decoder
-            (buf) -> {
-                return new PingC2SPacket(
-                        buf.readLong()
-                );
-            }
+            (buf) -> new PingC2SPacket(
+                    buf.readLong()
+            )
     );
 
     @Override

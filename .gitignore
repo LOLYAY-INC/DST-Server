@@ -1,0 +1,25 @@
+# Maven
+target/
+dependency-reduced-pom.xml
+
+# IntelliJ IDEA
+.idea/
+
+# Runtime cache
+cache/
+
+config.yml
+config.json
+drm.json
+cache.json
+vkcookies.txt
+
+# Build output logs
+mvn_output.txt
+mvn_output_clean.txt
+
+addons/
+
+# Native libraries
+natives/
+
