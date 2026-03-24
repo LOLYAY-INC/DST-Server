@@ -29,7 +29,6 @@ public class TrackCacheManager {
         long now = System.currentTimeMillis();
         IntArrayList expiredIds = new IntArrayList();
         
-        // Find all expired tracks
         for (Map.Entry<Integer, Long> entry : trackLastAccessTime.entrySet()) {
             int trackId = entry.getKey();
             long lastAccess = entry.getValue();
@@ -43,15 +42,12 @@ public class TrackCacheManager {
             return;
         }
         
-        // Remove from tracking
         for (int trackId : expiredIds) {
             trackLastAccessTime.remove(trackId);
         }
         
-        // Remove from server cache
         dstServer.removeTracksFromCache(expiredIds);
         
-        // Notify all clients
         CacheExpireS2C packet = new CacheExpireS2C(expiredIds);
         dstServer.broadcastToAllClients(packet);
         

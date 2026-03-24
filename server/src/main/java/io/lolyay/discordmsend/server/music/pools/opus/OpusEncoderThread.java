@@ -19,9 +19,6 @@ public class OpusEncoderThread extends Thread {
         tasks.add(task);
     }
 
-    /**
-     * @return true if the task was found and removed
-     */
     public boolean removeTask(OpusEncodingTask task) {
         return tasks.remove(task);
     }
@@ -44,7 +41,6 @@ public class OpusEncoderThread extends Thread {
                 }
             }
 
-            // Avoid busy-spinning when all tasks are idle or queues are full
             try {
                 Thread.sleep(1);
             } catch (InterruptedException e) {

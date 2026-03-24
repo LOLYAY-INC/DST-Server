@@ -18,7 +18,6 @@ public class PacketEncryptionManager {
 
     private byte[] toByteArray(ByteBuf buf) {
         int readableBytes = buf.readableBytes();
-        // Resize the internal buffer only if it's too small
         if (this.inputBuffer.length < readableBytes) {
             this.inputBuffer = new byte[readableBytes];
         }

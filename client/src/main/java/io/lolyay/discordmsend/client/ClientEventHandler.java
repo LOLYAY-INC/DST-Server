@@ -5,28 +5,22 @@ import io.lolyay.discordmsend.network.protocol.packet.packets.S2C.postenc.TrackT
 import io.lolyay.discordmsend.network.protocol.packet.packets.S2C.postenc.events.*;
 
 public interface ClientEventHandler {
-    public void onPlayerPause(PlayerPauseS2CPacket packet);
+    void onPlayerPause(PlayerPauseS2CPacket packet);
 
-    public void onPlayerResume(PlayerResumeS2CPacket packet);
+    void onPlayerResume(PlayerResumeS2CPacket packet);
 
-    public void onPlayerTrackStart(PlayerTrackStartS2CPacket packet);
+    void onPlayerTrackStart(PlayerTrackStartS2CPacket packet);
 
-    public void onPlayerTrackEnd(PlayerTrackEndS2CPacket packet);
+    void onPlayerTrackEnd(PlayerTrackEndS2CPacket packet);
 
-    public void onPlayerTrackError(PlayerTrackFailS2CPacket packet);
+    void onPlayerTrackError(PlayerTrackFailS2CPacket packet);
 
-    public void onPlayerTrackStuck(PlayerTrackStuckS2CPacket packet);
+    void onPlayerTrackStuck(PlayerTrackStuckS2CPacket packet);
 
-    public void onDisconnect(String reason);
+    void onDisconnect(String reason);
 
-    public void onTrackTimingUpdate(TrackTimingUpdateS2CPacket packet);
+    void onTrackTimingUpdate(TrackTimingUpdateS2CPacket packet);
 
-    /**
-     * Called when an audio packet is received from the server.
-     * This is sent by special guild IDs (0-200) that use direct packet transmission.
-     * 
-     * @param packet The audio packet containing guild ID and Opus-encoded audio positionMs (20ms frame)
-     */
-    public void onAudio(AudioS2CPacket packet);
+    void onAudio(AudioS2CPacket packet);
 
 }

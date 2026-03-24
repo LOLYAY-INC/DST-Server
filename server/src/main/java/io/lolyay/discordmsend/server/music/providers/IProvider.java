@@ -5,10 +5,6 @@ import io.lolyay.discordmsend.server.music.players.GuildPlayerInstance;
 
 import java.util.List;
 
-/**
- * Abstract base for all audio providers.
- * Subclasses stream PCM frames into {@link GuildPlayerInstance#getPcmFrames()}.
- */
 public abstract class IProvider {
 
     /** Start decoding {@code track} and streaming PCM frames into the player's pcmFrames list. */

@@ -21,24 +21,15 @@ public class PacketRegistry {
 
     private final Map<NetworkPhase, PhaseData> phaseData = new EnumMap<>(NetworkPhase.class);
 
-    /**
-     * This inner class now holds the maps for packet IDs and codecs.
-     */
     private static class DirectionalData {
         final Map<Class<? extends Packet<?>>, Integer> packetToId = new Object2ObjectOpenHashMap<>();
         final Map<Integer, PacketCodec<?>> idToCodec = new IntObjectHashMap<>();
     }
 
-    /**
-     * A PhaseData now contains two DirectionalData instances: one for each direction.
-     */
     private static class PhaseData {
         final Map<PacketDirection, DirectionalData> directionalData = new EnumMap<>(PacketDirection.class);
     }
 
-    /**
-     * Registers a packet with an explicit ID and DIRECTION.
-     */
     public <T extends Packet<?>> void register(NetworkPhase phase, PacketDirection direction, int id, Class<T> packetClass, PacketCodec<T> codec) {
         DirectionalData data = phaseData
                 .computeIfAbsent(phase, k -> new PhaseData())
@@ -56,7 +47,6 @@ public class PacketRegistry {
         data.packetToId.put(packetClass, id);
     }
 
-    // getPacketId and getCodec now need to know the direction to look in.
 
     public int getPacketId(NetworkPhase phase, PacketDirection direction, Packet<?> packet) {
         Integer id = phaseData.get(phase).directionalData.get(direction).packetToId.get(packet.getClass());
@@ -75,9 +65,6 @@ public class PacketRegistry {
         return codec;
     }
 
-    /**
-     * Your corrected registration method. This now works without collision.
-     */
     public void registerAll() {
         log.debug("Registering all protocol packets...");
         // PRE ENCRYPTION (Client to Server)

@@ -4,6 +4,11 @@ public enum AudioCodecRaw {
     OPUS,
     AAC,
     VORBIS,
-    PCM
+    PCM,
+    FLAC,
+    ALAC,
+    MP3,
+    DTS_AC3,
+
 
 }

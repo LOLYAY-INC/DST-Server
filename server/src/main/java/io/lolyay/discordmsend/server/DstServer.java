@@ -39,14 +39,13 @@ import moe.kyokobot.koe.poller.udpqueue.QueueManagerPool;
 import moe.kyokobot.koe.poller.udpqueue.UdpQueueFramePollerFactory;
 
 import java.security.KeyPair;
-import java.security.Provider;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+//TODO: holy giant file - slpit up
 @Slf4j
 @Getter
 public class DstServer {
@@ -91,7 +90,7 @@ public class DstServer {
         this.serverName = initData.getServerName();
         this.serverVersion = initData.getServerVersion();
         this.features = initData.getFeatures();
-        this.ytSourceVersion = initData.getDapiVersion();
+        this.ytSourceVersion = initData.getServerId();
         this.countryCode = initData.getCountryCode();
         this.singleGuildHQ = initData.isSingleGuildHQ();
         this.port = port;
@@ -314,10 +313,6 @@ public class DstServer {
     }
 
 
-    /**
-     * Removes tracks from the server cache.
-     * Called by TrackCacheManager when tracks expire.
-     */
     public void removeTracksFromCache(List<Integer> trackIds) {
         for (int trackId : trackIds) {
             if (trackId >= 0 && trackId < trackPacketRegistry.size()) {
@@ -329,22 +324,15 @@ public class DstServer {
             }
         }
         
-        // Remove from query cache (reverse lookup and remove)
         queryCache.entrySet().removeIf(entry -> trackIds.contains(entry.getValue()));
     }
 
-    /**
-     * Broadcasts a packet to all connected clients.
-     */
     public void broadcastToAllClients(io.lolyay.discordmsend.network.protocol.packet.Packet<?> packet) {
         for (ConnectedClient client : connectedClients) {
             client.getConnection().send(packet);
         }
     }
 
-    /**
-     * Marks a track as accessed in the cache manager.
-     */
     public void markTrackAccessed(int trackId) {
         cacheManager.markAccessed(trackId);
     }

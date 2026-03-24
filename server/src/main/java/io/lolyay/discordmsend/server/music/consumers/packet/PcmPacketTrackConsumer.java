@@ -11,20 +11,12 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 
-/**
- * Raw PCM packet sender — bypasses the Opus encoder entirely.
- *
- * <p>In each {@link #tick()} the consumer reads a raw PCM frame directly from
- * {@link GuildPlayerInstance#getPcmFrames()} at the current position, advances
- * the position, converts to bytes, and sends. The Opus encoder task is NOT
- * registered because {@link #shouldEncodeToOpus()} returns {@code false}.
- *
- * <p>UDP mode drains as fast as possible; normal mode enforces ~20ms pacing.
- */
+
 @Slf4j
 public class PcmPacketTrackConsumer extends AbstractTrackConsumer {
 
-    private static final long FRAME_NS = 20_000_000L; // 20ms in nanoseconds
+    //TODO: same as OpusPacketTrackConsumer
+    private static final long FRAME_NS = 20_000_000L;
 
     private final boolean udpMode;
     private final AtomicLong sequence = new AtomicLong(0);
@@ -40,11 +32,9 @@ public class PcmPacketTrackConsumer extends AbstractTrackConsumer {
         log.info("Created PcmPacketTrackConsumer for guild {} (UDP mode: {})", getGuildId(), udpMode);
     }
 
-    // ── AbstractTrackConsumer hooks ──────────────────────────────────────────
-
     @Override
     protected boolean shouldEncodeToOpus() {
-        return false; // We send raw PCM — no opus encoder task needed.
+        return false;
     }
 
     @Override
@@ -69,8 +59,6 @@ public class PcmPacketTrackConsumer extends AbstractTrackConsumer {
         running = false;
     }
 
-    // ── Tick (dumb sender) ───────────────────────────────────────────────────
-
     @Override
     public void tick() {
         if (!running || isPaused()) return;
@@ -78,13 +66,12 @@ public class PcmPacketTrackConsumer extends AbstractTrackConsumer {
         ArrayList<short[]> pcmFrames = getPlayerInstance().getPcmFrames();
 
         if (udpMode) {
-            // UDP: drain as fast as possible, no pacing
             int pos = getPlayerInstance().getAndIncrementPosition();
             short[] frame;
             synchronized (pcmFrames) {
                 if (pos >= pcmFrames.size()) {
                     getPlayerInstance().getEncodePosition().compareAndSet(pos + 1, pos);
-                    return; // nothing ready yet
+                    return;
                 }
                 frame = pcmFrames.get(pos);
             }
@@ -92,7 +79,6 @@ public class PcmPacketTrackConsumer extends AbstractTrackConsumer {
             return;
         }
 
-        // Normal mode: enforce 20ms pacing
         long now = System.nanoTime();
         if (now < nextSendNs) return;
 
@@ -101,7 +87,7 @@ public class PcmPacketTrackConsumer extends AbstractTrackConsumer {
         synchronized (pcmFrames) {
             if (pos >= pcmFrames.size()) {
                 getPlayerInstance().getEncodePosition().compareAndSet(pos + 1, pos);
-                nextSendNs += FRAME_NS; // still advance clock to avoid bursting on resume
+                nextSendNs += FRAME_NS;
                 return;
             }
             frame = pcmFrames.get(pos);
@@ -112,7 +98,6 @@ public class PcmPacketTrackConsumer extends AbstractTrackConsumer {
     }
 
     private void sendPcmFrame(short[] samples) {
-        // Apply volume
         float vol = getVolume();
         if (vol != 1F) {
             short[] scaled = new short[samples.length];

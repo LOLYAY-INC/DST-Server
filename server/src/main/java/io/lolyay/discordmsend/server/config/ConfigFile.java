@@ -35,7 +35,6 @@ public class ConfigFile {
             .defaultOptions(opts -> opts.shouldCopyDefaults(true))
             .build();
 
-    // ==== Public API ====
 
     public static void load() throws IOException {
         if (!Files.exists(CONFIG_PATH)) {
@@ -59,9 +58,7 @@ public class ConfigFile {
 
     }
 
-    /** Saves current static field values back to the config.yml */
     public static void save() throws IOException {
-        // Read existing config to preserve any manual edits
         if (!Files.exists(CONFIG_PATH)) {
             saveDefaults();
             return;
@@ -87,7 +84,6 @@ public class ConfigFile {
         LOADER.save(root);
     }
 
-    // ==== Private helpers ====
 
     private static void saveDefaults() throws IOException {
         // Copy default config from resources
@@ -99,7 +95,4 @@ public class ConfigFile {
         }
     }
 
-    private static void setDefaults(CommentedConfigurationNode root) throws SerializationException {
-        // Not used anymore - we write manually for comments
-    }
 }

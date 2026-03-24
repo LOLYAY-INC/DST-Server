@@ -14,35 +14,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.BlockingQueue;
 
-/**
- * Base class for all audio consumers.
- *
- * <p>Data flow:
- * <pre>
- *   IProvider  →  playerInstance.pcmFrames[]  →  OpusEncodingTask
- *                                                       │
- *                                              playerInstance.opusQueue
- *                                                       │
- *                                               consumer.tick()  ("dumb sender")
- * </pre>
- *
- * <ul>
- *   <li>The <b>provider</b> decodes audio and writes {@code short[]} frames into
- *       {@code playerInstance.getPcmFrames()} sequentially.</li>
- *   <li>The <b>encoder task</b> (on {@link io.lolyay.discordmsend.server.music.pools.opus.OpusEncoderPool})
- *       reads frames by index, encodes them to Opus, and pushes to
- *       {@code playerInstance.getOpusQueue()}.</li>
- *   <li>The <b>consumer</b> (this class + subclass) is ticked by
- *       {@link io.lolyay.discordmsend.server.music.pools.player.GuildPlayerPool}.
- *       Each tick it drains {@code opusQueue} and forwards frames to the destination
- *       (Discord voice / network packet / etc.).</li>
- * </ul>
- */
+
 @Slf4j
 public abstract class AbstractTrackConsumer {
-
-    public static final int FRAME_SIZE = 960;            // 20ms @ 48kHz mono / channel
-    public static final int FRAME_INTERVAL_MS = 20;
 
     private OpusEncodingTask opusEncodingTask;
 
@@ -67,38 +41,19 @@ public abstract class AbstractTrackConsumer {
 
     private boolean stopped = true;
 
-    // ── Abstract lifecycle hooks ─────────────────────────────────────────────
 
-    /** Called before first playback, or after a full stop, to set up any required state. */
     protected abstract void init();
 
-    /** Called once the encoder task has started and the opus queue is being filled. */
     protected abstract void start();
 
-    /** Release per-track resources. Called between tracks (track replaced / track ended). */
     protected abstract void cleanUp();
 
-    /** Full stop; called once on {@link #stop()}. */
     protected abstract void end();
-
-    /**
-     * Called by {@link io.lolyay.discordmsend.server.music.pools.player.GuildPlayerPool}
-     * on every loop iteration.
-     * Implementations should be the "dumb sender": poll {@link #getOpusQueue()}, forward
-     * the frame to the destination, and return quickly. No heavy work here.
-     */
     public abstract void tick();
 
-    /**
-     * Override and return {@code false} if this consumer handles raw PCM directly
-     * (e.g. {@link io.lolyay.discordmsend.server.music.consumers.packet.PcmPacketTrackConsumer})
-     * and does not need an Opus encoder task.
-     */
     protected boolean shouldEncodeToOpus() {
         return true;
     }
-
-    // ── Constructor ──────────────────────────────────────────────────────────
 
     public AbstractTrackConsumer(GuildPlayerInstance player, long guildId) {
         this.audioProvider = ProviderPool.getInstance().createProvider(player, player.getParent().getDstServer().getAudioCacheManager(), null);
@@ -107,16 +62,10 @@ public abstract class AbstractTrackConsumer {
         this.volume = playerInstance.getDefaultVolume() / 100F;
     }
 
-    // ── Convenience accessor ─────────────────────────────────────────────────
-
-    /**
-     * The encoder→sender queue. Backed by {@link GuildPlayerInstance#getOpusQueue()}.
-     */
     protected BlockingQueue<byte[]> getOpusQueue() {
         return playerInstance.getOpusQueue();
     }
 
-    // ── Public playback API ──────────────────────────────────────────────────
 
     public final void stop() {
         if (stopped) {
@@ -136,14 +85,13 @@ public abstract class AbstractTrackConsumer {
 
     public final void playTrack(TrackMetadata trackMetadata) {
         if (playing)
-            reset(); // fires REPLACED for the outgoing track
+            reset();
 
         if (stopped)
             init();
 
         stopped = false;
 
-        // Clear all state from the previous track
         playerInstance.getPcmFrames().clear();
         playerInstance.getEncodePosition().set(0);
         playerInstance.getOpusQueue().clear();
@@ -174,7 +122,6 @@ public abstract class AbstractTrackConsumer {
         paused = false;
     }
 
-    // ── Internal helpers ─────────────────────────────────────────────────────
 
     protected final void reset() {
         resetInternal();
@@ -197,7 +144,6 @@ public abstract class AbstractTrackConsumer {
         log.debug("Player {} cleared and ready for next track", guildId);
     }
 
-    // ── Metadata passthrough ─────────────────────────────────────────────────
 
     @Nullable
     public TrackMetadata getPlayingTrack() {

@@ -55,7 +55,6 @@ public class ConnectedPlayer {
     }
 
     public void destroy() {
-        // Unregister all players from the pool before closing koe
         for (GuildPlayerInstance player : players.values()) {
             dstServer.getGuildPlayerPool().unregister(player);
         }

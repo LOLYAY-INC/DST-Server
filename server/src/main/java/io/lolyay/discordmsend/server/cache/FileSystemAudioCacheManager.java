@@ -60,7 +60,6 @@ public class FileSystemAudioCacheManager implements AudioCacheManager {
         
         Path trackFile = cacheDirectory.resolve(filename);
         if (!Files.exists(trackFile)) {
-            // Clean up stale index entry
             trackIndex.remove(hash);
             saveIndex();
             throw new IOException("Track file missing: " + filename);
@@ -76,7 +75,6 @@ public class FileSystemAudioCacheManager implements AudioCacheManager {
         String tempFilename = hash + ".pcm.tmp";
         Path tempFile = cacheDirectory.resolve(tempFilename);
         
-        // Store temp file path for finalization
         pendingSaves.put(trackUri, tempFile);
         
         log.debug("Starting to cache track: " + hash);
@@ -93,7 +91,6 @@ public class FileSystemAudioCacheManager implements AudioCacheManager {
         }
         
         if (!success || !Files.exists(tempFile)) {
-            // Delete incomplete file
             try {
                 if (Files.exists(tempFile)) {
                     Files.delete(tempFile);

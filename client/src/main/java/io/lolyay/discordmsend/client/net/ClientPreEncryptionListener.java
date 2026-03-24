@@ -61,7 +61,6 @@ public class ClientPreEncryptionListener implements ClientPreEncryptionPacketLis
     @Override
     public void onDisconnect(String reason) {
         log.debug("Client: Disconnected during encryption: " + reason);
-        //
     }
 
 

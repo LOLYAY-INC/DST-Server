@@ -48,9 +48,9 @@ public class ServerPreEncryptionListener implements ServerPreEncryptionPacketLis
         client = new ConnectedClient(packet.protocolVersion(), connection, dstServer);
         dstServer.addConnectedClient(client);
 
-        nonce = NetworkEncryptionUtils.generateNonce(); // 16 bytes now
+        nonce = NetworkEncryptionUtils.generateNonce();
         PublicKey publicKey = dstServer.getKeyPair().getPublic();
-        byte[] pubBytes = RSA128Serializer.publicKeyToBytes(publicKey); // 128 bytes
+        byte[] pubBytes = RSA128Serializer.publicKeyToBytes(publicKey);
 
         getConnection().send(new EncryptionRequestS2CPacket(pubBytes, nonce));
         log.debug("Sent ER");

@@ -65,30 +65,18 @@ public class NetworkingClient {
                         protected void initChannel(SocketChannel ch) throws Exception {
                             connection = new Connection(ch, Enviroment.CLIENT, protocolVersion, host, port, dstClient.getApiKey());
 
-                            // The Netty Pipeline (mirrors the server's)
                             ch.pipeline()
-                                    // == INBOUND ==
-                                    // Decodes the frame length prefix.
-                                    // maxFrameLength: 8MB, a reasonable limit
-                                    // lengthFieldOffset: 0, length is at the start
-                                    // lengthFieldLength: 3, length is a 3-byte integer (up to 16MB)
-                                    // lengthAdjustment: 0, no adjustment needed
-                                    // initialBytesToStrip: 3, remove the length prefix itself before passing on
                                     .addLast("frameDecoder", new ProtobufVarint32FrameDecoder())
                                     .addLast("packetDecoder", new PacketDecoder(registry, connection, PacketDirection.CLIENT_BOUND))
 
-                                    // == OUTBOUND ==
-                                    // Encodes the packet length into a 3-byte prefix.
                                     .addLast("frameEncoder", new ProtobufVarint32LengthFieldPrepender())
                                     .addLast("packetEncoder", new PacketEncoder(registry, connection, PacketDirection.SERVER_BOUND))
 
-                                    // == APPLICATION LOGIC ==
                                     .addLast("handler", connection);
 
-                            // Set the client-side listener
                             ClientPreEncryptionListener listener = new ClientPreEncryptionListener(connection, dstClient);
                             connection.setListener(listener);
-                            connection.setPhase(NetworkPhase.PRE_ENCRYPTION); // Start in HANDSHAKING phase
+                            connection.setPhase(NetworkPhase.PRE_ENCRYPTION);
                         }
                     });
 
@@ -96,7 +84,6 @@ public class NetworkingClient {
             log.info("Client connected to " + host + ":" + port);
             connected = true;
 
-            // Wait for the connection to close
             f.channel().closeFuture().sync();
             connected = false;
         } finally {

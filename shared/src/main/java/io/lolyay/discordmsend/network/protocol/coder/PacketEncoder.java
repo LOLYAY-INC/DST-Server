@@ -21,7 +21,7 @@ public class PacketEncoder extends MessageToByteEncoder<Packet<?>> {
 
     private final PacketRegistry registry;
     private final Connection connection;
-    private final PacketDirection direction; // New field
+    private final PacketDirection direction;
 
     public PacketEncoder(PacketRegistry registry, Connection connection, PacketDirection direction) {
         this.registry = registry;

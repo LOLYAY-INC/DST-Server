@@ -15,16 +15,6 @@ import org.jetbrains.annotations.Nullable;
 import java.net.InetSocketAddress;
 import java.util.List;
 
-/**
- * Discord voice consumer.
- *
- * <p>Koe calls {@link #canProvide()} / {@link #provideFrame(ByteBuf)} on its own
- * internal schedule (every ~20ms). This consumer is therefore a purely reactive
- * "dumb sender": it just polls the opus queue that the encoder fills.
- *
- * <p>{@link #tick()} is a no-op because the Koe frame-polling loop already drives
- * the sending at the correct rate.
- */
 @Slf4j
 public class DiscordTrackConsumer extends AbstractTrackConsumer implements AudioFrameProvider, KoeEventListener {
 
@@ -38,7 +28,6 @@ public class DiscordTrackConsumer extends AbstractTrackConsumer implements Audio
         connection.registerListener(this);
     }
 
-    // ── AbstractTrackConsumer hooks ──────────────────────────────────────────
 
     @Override
     protected void init() {
@@ -63,15 +52,11 @@ public class DiscordTrackConsumer extends AbstractTrackConsumer implements Audio
         connection.stopAudioFramePolling();
     }
 
-    /**
-     * No-op: Koe drives the frame loop internally via {@link #provideFrame(ByteBuf)}.
-     */
+
     @Override
     public void tick() {
-        // Deliberately empty — Koe calls provideFrame() on its own schedule.
     }
 
-    // ── AudioFrameProvider ───────────────────────────────────────────────────
 
     @Override
     public boolean canProvide() {
@@ -91,7 +76,6 @@ public class DiscordTrackConsumer extends AbstractTrackConsumer implements Audio
         stop();
     }
 
-    // ── KoeEventListener ─────────────────────────────────────────────────────
 
     @Override
     public void onCodecChanged(@NotNull CodecInstance codecInstance) {

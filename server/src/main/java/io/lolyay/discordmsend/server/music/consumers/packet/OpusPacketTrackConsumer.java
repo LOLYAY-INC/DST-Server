@@ -69,7 +69,6 @@ public class OpusPacketTrackConsumer extends AbstractTrackConsumer {
             }
             frame = OPUS_SILENCE;
         }
-
         try {
             AudioS2CPacket packet = new AudioS2CPacket(getGuildId(), AudioCodec.OPUS_MAX, frame, sequence.getAndIncrement());
             getPlayerInstance().getParent().getOwner().sendPacket(packet);

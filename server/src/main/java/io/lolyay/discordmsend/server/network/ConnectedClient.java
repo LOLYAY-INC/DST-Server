@@ -82,14 +82,9 @@ public class ConnectedClient {
         connection.send(packet);
     }
 
-    
-    /**
-     * Cleanup all resources when client disconnects
-     */
     public void cleanup() {
         if (player != null) {
             log.info("Cleaning up resources for disconnected client " + player.getUserId());
-            // Stop all players first
             for (GuildPlayerInstance p : player.getPlayers().values()) {
                 try {
                     p.stop();
@@ -98,7 +93,6 @@ public class ConnectedClient {
                     log.error("Error stopping player during cleanup: " + e.getMessage());
                 }
             }
-            // Unregister from pool and release koe resources
             player.destroy();
         }
     }

@@ -25,7 +25,6 @@ public class AddonLoader {
     private final static File addonsDir = new File("addons");
     private final static String ADDON_INFO_FILE = "dst.addon.json";
     private URLClassLoader addonClassLoader;
-    // Assuming you have Jackson in your dependencies
 
     private static record AddonInfo(
             String id,

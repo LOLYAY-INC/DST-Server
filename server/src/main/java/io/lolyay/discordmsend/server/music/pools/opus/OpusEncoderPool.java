@@ -21,11 +21,6 @@ public class OpusEncoderPool {
         this.framesPerTick = framesPerTick;
     }
 
-    /**
-     * Registers a new encoding task for the given guild player.
-     * Auto-scales threads: creates a new thread per task until maxThreads is reached,
-     * then assigns to the least-loaded thread.
-     */
     public OpusEncodingTask registerTask(GuildPlayerInstance player) {
         OpusEncodingTask task = new OpusEncodingTask(player, framesPerTick, this);
 
@@ -49,10 +44,6 @@ public class OpusEncoderPool {
         return task;
     }
 
-    /**
-     * Called by OpusEncodingTask.stop() to remove itself from its thread.
-     * Shuts down the thread if it becomes empty.
-     */
     void removeTask(OpusEncodingTask task) {
         synchronized (lock) {
             threads.removeIf(thread -> {

@@ -135,73 +135,11 @@ public class ServerPostEncryptionListener implements ServerPostEncryptionPacketL
     public void onPlayerSetVolume(PlayerSetVolumeC2SPacket packet) {
         client.getPlayer().getOrCreatePlayer(packet.guildId()).setVolume((float) packet.volume() / 100);
     }
-//
-//    @Override
-//    public void onRequestLink(RequestLinkC2SPacket packet) {
-//        long guildId = packet.guildId();
-//        int sequence = packet.sequence();
-//
-//        // Check if upload system is initialized
-//        if (server.getTrackUploadHandler() == null) {
-//            connection.send(LinkResponseS2CPacket.error(guildId, sequence,
-//                "Upload system not initialized. S3 credentials may be missing."));
-//            log.warn("Link request failed: Upload system not initialized");
-//            return;
-//        }
-//
-//        try {
-//            TrackPlayerInstance player = client.getPlayer().getOrCreatePlayer(guildId);
-//
-//            // Check if a track is playing
-//            if (player.getConsumer().getStreamer().getPlayingTrack() == null) {
-//                connection.send(LinkResponseS2CPacket.error(guildId, sequence,
-//                    "No track currently playing"));
-//                log.debug("Link request failed: No track playing");
-//                return;
-//            }
-//
-//            String trackUri = player.getConsumer().getStreamer().getPlayingTrack().getUniqueId();
-//            String cacheId = server.getAudioCacheManager().computeHash(trackUri);
-//
-//            // Check if PCM file exists
-//            if (!server.getAudioCacheManager().hasTrack(trackUri)) {
-//                connection.send(LinkResponseS2CPacket.error(guildId, sequence,
-//                    "Track not cached. Please wait for track to finish playing first."));
-//                log.debug("Link request failed: Track not cached for " + cacheId);
-//                return;
-//            }
-//
-//            // Get the PCM file path
-//            String pcmFilePath = "./cache/tracks/" + cacheId + ".pcm";
-//
-//            log.debug("Processing link request for cache ID: " + cacheId + " (sequence: " + sequence + ")");
-//
-//            // Start upload process (or get cached URL)
-//            server.getTrackUploadHandler().getOrUploadTrack(cacheId, pcmFilePath)
-//                .thenAccept(url -> {
-//                    connection.send(LinkResponseS2CPacket.success(guildId, sequence, url));
-//                    log.debug("Link request successful: " + url);
-//                })
-//                .exceptionally(ex -> {
-//                    connection.send(LinkResponseS2CPacket.error(guildId, sequence,
-//                        "Upload failed: " + ex.getMessage()));
-//                    log.err("Link request upload failed: " + ex.getMessage());
-//                    return null;
-//                });
-//
-//        } catch (Exception e) {
-//            connection.send(LinkResponseS2CPacket.error(guildId, sequence,
-//                "Internal error: " + e.getMessage()));
-//            log.err("Link request error: " + e.getMessage());
-//            e.printStackTrace();
-//        }
-//    }
 
     @Override
     public void onForceReconnect(ForceDiscordReconnectC2SPacket packet) {
         GuildPlayerInstance player = client.getPlayer().getOrCreatePlayer(packet.guildId());
         
-        // Check if this is a Discord connection
         if (player.getConsumer() instanceof DiscordTrackConsumer dcConsumer) {
             dcConsumer.getConnection().stopAudioFramePolling();
             dcConsumer.getConnection().reconnect();
@@ -209,7 +147,6 @@ public class ServerPostEncryptionListener implements ServerPostEncryptionPacketL
             log.debug("Force reconnected Discord player for guild {}", packet.guildId());
         } else {
             log.warn("Force reconnect requested for non-Discord player (guild {}). Ignoring.", packet.guildId());
-            //This is possible to implement ( restart generator and sender thread and clear pregen buffer but why? It shouldnt break unlike discord)
         }
     }
 
