@@ -81,11 +81,12 @@ public class DstServer {
 
     private final OpusEncoderPool opusEncoderPool;
     private final GuildPlayerPool guildPlayerPool;
-    private final int opusEncoderPoolSize = 2;
-    private final int opusQueueLen = 200;
+    private final int opusEncoderPoolSize = Math.max(3, Runtime.getRuntime().availableProcessors() / 2);
+    private final int opusFramesPerTick = 4;
 
 
     public DstServer(int port, int protocolVersion, PacketRegistry registry, ServerInitData initData, String apiKey){
+        io.lolyay.discordmsend.server.util.HighResolutionTimer.enable();
         this.networkServer = new NetworkServer(port, registry, this);
         this.serverName = initData.getServerName();
         this.serverVersion = initData.getServerVersion();
@@ -103,10 +104,9 @@ public class DstServer {
         this.cacheManager = new TrackCacheManager(this, singleGuildHQ ? 7 : 2);
 
 
-        this.opusEncoderPool = new OpusEncoderPool(this.opusEncoderPoolSize, this.opusQueueLen);
+        this.opusEncoderPool = new OpusEncoderPool(this.opusEncoderPoolSize, this.opusFramesPerTick);
         this.guildPlayerPool = new GuildPlayerPool(4);
         
-        // Initialize audio cache manager
         try {
             this.audioCacheManager = new io.lolyay.discordmsend.server.cache.FileSystemAudioCacheManager("./cache/tracks");
             log.info("Audio cache initialized at ./cache/tracks");
@@ -154,7 +154,6 @@ public class DstServer {
 
         scheduleRepeating(cacheManager::expireOldTracks, 6, TimeUnit.HOURS);
 
-        // Register Server Requests
         ServerRequestManager.registerExchange(SearchRequest.EXCHANGE_TYPE, (requestPacket, server, client) -> {
             if(!(requestPacket instanceof SearchMultipleC2SPacket searchMultipleC2SPacket))
                 return null;

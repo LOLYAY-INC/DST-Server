@@ -5,7 +5,7 @@
     <parent>
         <groupId>io.lolyay.dct</groupId>
         <artifactId>DiscordToucher</artifactId>
-        <version>9.0.3</version>
+        <version>9.1.1</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -45,7 +45,7 @@
         <dependency>
             <groupId>moe.kyokobot.koe</groupId>
             <artifactId>core</artifactId>
-            <version>3.0.0-pre5</version>
+            <version>3.0.0-pre6</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.sedmelluq</groupId>
@@ -60,7 +60,7 @@
         <dependency>
             <groupId>moe.kyokobot.koe</groupId>
             <artifactId>ext-udpqueue</artifactId>
-            <version>3.0.0-pre5</version>
+            <version>3.0.0-pre6</version>
             <exclusions>
                 <exclusion>
                     <groupId>club.minnced</groupId>
@@ -373,7 +373,7 @@
                             <transformers>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>io.lolyay.discordmsend.dstServer.Main</mainClass>
+                                    <mainClass>io.lolyay.discordmsend.server.Main</mainClass>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>

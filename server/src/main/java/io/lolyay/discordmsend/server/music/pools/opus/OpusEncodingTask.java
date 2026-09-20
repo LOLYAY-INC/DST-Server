@@ -28,7 +28,7 @@ public class OpusEncodingTask {
     private volatile boolean running = false;
 
     private int idleTicks = 0;
-    private static final int IDLE_TICK_LIMIT = 500;
+    private static final int IDLE_LOG_INTERVAL = 1000;
 
     @SneakyThrows
     public OpusEncodingTask(GuildPlayerInstance player, int framesPerTick, OpusEncoderPool pool) {
@@ -65,10 +65,9 @@ public class OpusEncodingTask {
                         stop();
                     } else {
                         idleTicks++;
-                        if (idleTicks >= IDLE_TICK_LIMIT) {
-                            log.warn("Encoder idle for {}ms for guild {} — stopping stale task",
-                                    IDLE_TICK_LIMIT, player.getGuildId());
-                            stop();
+                        if (idleTicks % IDLE_LOG_INTERVAL == 0) {
+                            log.warn("Encoder waiting on provider for guild {} ({} idle passes)",
+                                    player.getGuildId(), idleTicks);
                         }
                     }
                     return;

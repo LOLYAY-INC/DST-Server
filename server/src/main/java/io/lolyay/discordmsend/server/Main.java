@@ -21,7 +21,7 @@ public class Main {
 
         serverInitData = ServerInitData.builder()
                 .serverName("Default DST Server")
-                .serverVersion("Alpha-9.0.3-P" + Enviroment.PROTOCOL_VERSION)
+                .serverVersion("Alpha-9.1.1-P" + Enviroment.PROTOCOL_VERSION)
                 .countryCode("US")
                 .features(new ServerFeatures(
                         ServerFeatures.Feature.CAN_DO_YOUTUBE,

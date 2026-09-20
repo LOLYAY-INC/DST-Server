@@ -15,6 +15,8 @@ public class OpusPacketTrackConsumer extends AbstractTrackConsumer {
     //TODO: 20ms is not always good, ideally should be configurable by the client, and adding a burst of frames at the start to always keep a client sided jitter buffer configurable by the client would be great
     private static final long FRAME_NS = 20_000_000L; // 20ms in nanoseconds
     private static final byte[] OPUS_SILENCE = {(byte) 0xF8, (byte) 0xFF, (byte) 0xFE};
+    private static final int MAX_CATCHUP_FRAMES = 5;
+    private static final long MAX_DRIFT_NS = 250_000_000L;
 
     private final boolean udpMode;
     private final AtomicLong sequence = new AtomicLong(0);
@@ -61,21 +63,27 @@ public class OpusPacketTrackConsumer extends AbstractTrackConsumer {
         long now = System.nanoTime();
         if (now < nextSendNs) return;
 
-        byte[] frame = getOpusQueue().poll();
-        if (frame == null) {
-            if (udpMode) {
-                nextSendNs += FRAME_NS;
-                return;
+        for (int sent = 0; sent < MAX_CATCHUP_FRAMES && now >= nextSendNs; sent++) {
+            byte[] frame = getOpusQueue().poll();
+            if (frame == null) {
+                if (udpMode) {
+                    // Nothing buffered and the client tolerates gaps — just keep the
+                    // clock moving; it self-paces until the encoder catches up.
+                    nextSendNs += FRAME_NS;
+                    break;
+                }
+                frame = OPUS_SILENCE;
             }
-            frame = OPUS_SILENCE;
+            try {
+                AudioS2CPacket packet = new AudioS2CPacket(getGuildId(), AudioCodec.OPUS_MAX, frame, sequence.getAndIncrement());
+                getPlayerInstance().getParent().getOwner().sendPacket(packet);
+            } catch (Exception e) {
+                log.error("Error sending opus packet for guild {}: {}", getGuildId(), e.getMessage());
+            }
+            nextSendNs += FRAME_NS;
         }
-        try {
-            AudioS2CPacket packet = new AudioS2CPacket(getGuildId(), AudioCodec.OPUS_MAX, frame, sequence.getAndIncrement());
-            getPlayerInstance().getParent().getOwner().sendPacket(packet);
-        } catch (Exception e) {
-            log.error("Error sending opus packet for guild {}: {}", getGuildId(), e.getMessage());
+    if (now - nextSendNs > MAX_DRIFT_NS) {
+            nextSendNs = now;
         }
-
-        nextSendNs += FRAME_NS;
     }
 }

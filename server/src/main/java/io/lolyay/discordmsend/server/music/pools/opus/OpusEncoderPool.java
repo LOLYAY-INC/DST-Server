@@ -68,9 +68,11 @@ public class OpusEncoderPool {
     }
 
 
+    private static final int TARGET_BITRATE = 256_000;
+
     public static OpusEncoder createEncoder() throws OpusException {
         OpusEncoder encoder = new OpusEncoder(48000, 2, OpusApplication.OPUS_APPLICATION_AUDIO);
-        encoder.setBitrate(OpusConstants.OPUS_BITRATE_MAX);
+        encoder.setBitrate(TARGET_BITRATE);
         encoder.setSignalType(OpusSignal.OPUS_SIGNAL_MUSIC);
         encoder.setBandwidth(OpusBandwidth.OPUS_BANDWIDTH_FULLBAND);
         encoder.setApplication(OpusApplication.OPUS_APPLICATION_AUDIO);
@@ -81,7 +83,7 @@ public class OpusEncoderPool {
         encoder.setPacketLossPercent(5);
         encoder.setLSBDepth(24);
         encoder.setPredictionDisabled(false);
-        encoder.setComplexity(10);
+        encoder.setComplexity(8);
         return encoder;
     }
 }

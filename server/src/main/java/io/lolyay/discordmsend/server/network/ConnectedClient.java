@@ -12,9 +12,13 @@ import io.lolyay.discordmsend.server.music.players.ConnectedPlayer;
 import io.lolyay.discordmsend.server.music.players.GuildPlayerInstance;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.management.ManagementFactory;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 @Getter
 @Setter
 @Slf4j
@@ -24,6 +28,7 @@ public class ConnectedClient {
     private final DstServer dstServer;
 
     private ConnectedPlayer player;
+    private CountDownLatch connectedPlayerLatch = new CountDownLatch(1);
 
     private CUserData userData;
 
@@ -31,6 +36,13 @@ public class ConnectedClient {
         this.protocolVersion = protocolVersion;
         this.connection = connection;
         this.dstServer = dstServer;
+    }
+
+    @SneakyThrows
+    public ConnectedPlayer getPlayer() {
+        if(!connectedPlayerLatch.await(1, TimeUnit.SECONDS))
+            throw new RuntimeException("Couldnt Create Player!");
+        else return player;
     }
 
     public void updateClient(){
@@ -58,8 +70,8 @@ public class ConnectedClient {
         }
         if(this.connection.getPhase() == NetworkPhase.POST_ENCRYPTION) {
             Runtime runtime = Runtime.getRuntime();
-            long maxMemory = runtime.maxMemory() / 1024 / 1024;       // Max memory JVM can use
-            long freeMemory = runtime.freeMemory() / 1024 / 1024;     // Free memory inside allocated memory
+            long maxMemory = runtime.maxMemory() / 1024 / 1024;
+            long freeMemory = runtime.freeMemory() / 1024 / 1024;
             com.sun.management.OperatingSystemMXBean osBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
             double processCpuLoad = osBean.getCpuLoad();
             int percent = (int) (processCpuLoad * 100);
@@ -72,6 +84,7 @@ public class ConnectedClient {
     public void setUserId(long userId){
         this.player = new ConnectedPlayer(String.valueOf(userId), dstServer.getClient(), dstServer, this);
         log.debug("Client " + userId + " Created SenderObject");
+        connectedPlayerLatch.countDown();
     }
 
     public void sendPacket(Packet<?> packet){

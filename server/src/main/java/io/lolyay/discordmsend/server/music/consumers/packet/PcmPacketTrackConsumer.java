@@ -17,6 +17,8 @@ public class PcmPacketTrackConsumer extends AbstractTrackConsumer {
 
     //TODO: same as OpusPacketTrackConsumer
     private static final long FRAME_NS = 20_000_000L;
+    private static final int MAX_CATCHUP_FRAMES = 5;
+    private static final long MAX_DRIFT_NS = 250_000_000L;
 
     private final boolean udpMode;
     private final AtomicLong sequence = new AtomicLong(0);
@@ -82,19 +84,25 @@ public class PcmPacketTrackConsumer extends AbstractTrackConsumer {
         long now = System.nanoTime();
         if (now < nextSendNs) return;
 
-        int pos = getPlayerInstance().getAndIncrementPosition();
-        short[] frame;
-        synchronized (pcmFrames) {
-            if (pos >= pcmFrames.size()) {
-                getPlayerInstance().getEncodePosition().compareAndSet(pos + 1, pos);
-                nextSendNs += FRAME_NS;
-                return;
+        for (int sent = 0; sent < MAX_CATCHUP_FRAMES && now >= nextSendNs; sent++) {
+            int pos = getPlayerInstance().getAndIncrementPosition();
+            short[] frame;
+            synchronized (pcmFrames) {
+                if (pos >= pcmFrames.size()) {
+                    getPlayerInstance().getEncodePosition().compareAndSet(pos + 1, pos);
+                    nextSendNs += FRAME_NS;
+                    break;
+                }
+                frame = pcmFrames.get(pos);
             }
-            frame = pcmFrames.get(pos);
+
+            sendPcmFrame(frame);
+            nextSendNs += FRAME_NS;
         }
 
-        sendPcmFrame(frame);
-        nextSendNs += FRAME_NS;
+        if (now - nextSendNs > MAX_DRIFT_NS) {
+            nextSendNs = now;
+        }
     }
 
     private void sendPcmFrame(short[] samples) {

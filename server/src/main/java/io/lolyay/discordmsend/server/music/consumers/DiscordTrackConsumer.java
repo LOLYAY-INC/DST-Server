@@ -91,6 +91,8 @@ public class DiscordTrackConsumer extends AbstractTrackConsumer implements Audio
     @Override
     public void gatewayReady(InetSocketAddress address, int i) {
         log.info("Gateway Ready for guild {}!", getGuildId());
+        connection.startAudioFramePolling();
+
     }
 
     @Override
